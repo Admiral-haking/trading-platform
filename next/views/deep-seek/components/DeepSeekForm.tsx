@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Snackbar, Stack, Typography } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,7 @@ export default function DeepSeekForm({ defaultValue = '', onDone }: Props) {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [testedOk, setTestedOk] = React.useState(false);
+  const [successOpen, setSuccessOpen] = React.useState(false);
 
   const testKey = async (key: string) => {
     setError(null);
@@ -70,6 +71,7 @@ export default function DeepSeekForm({ defaultValue = '', onDone }: Props) {
     setSaving(true);
     try {
       await api.put('/auth/init', { deepSeekApiKey: values.deepSeekApiKey });
+      setSuccessOpen(true);
       onDone();
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to save configuration');
@@ -83,6 +85,13 @@ export default function DeepSeekForm({ defaultValue = '', onDone }: Props) {
       <Box component="form" onSubmit={onSubmit} noValidate>
         <Stack spacing={2}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>DeepSeek API Key</Typography>
+          {Object.keys(methods.formState.errors).length > 0 && (
+            <Alert severity="error" variant="outlined">
+              {Object.values(methods.formState.errors).map((e: any, idx) => (
+                <div key={idx}>{e?.message}</div>
+              ))}
+            </Alert>
+          )}
           <Typography sx={{ opacity: 0.8 }}>
             Enter your DeepSeek API key. It will be validated before saving.
           </Typography>
@@ -97,6 +106,11 @@ export default function DeepSeekForm({ defaultValue = '', onDone }: Props) {
             </Button>
           </Stack>
         </Stack>
+        <Snackbar open={successOpen} autoHideDuration={2500} onClose={() => setSuccessOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+          <Alert elevation={6} variant="filled" severity="success" sx={{ width: '100%' }}>
+            DeepSeek key saved successfully.
+          </Alert>
+        </Snackbar>
       </Box>
     </FormProvider>
   );

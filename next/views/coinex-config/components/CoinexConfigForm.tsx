@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, MenuItem, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, MenuItem, Snackbar, Stack, Typography } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,12 +37,14 @@ export default function CoinexConfigForm({ defaults, onDone }: Props) {
 
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [successOpen, setSuccessOpen] = React.useState(false);
 
   const onSubmit = methods.handleSubmit(async (values) => {
     setError(null);
     setSaving(true);
     try {
       await api.put('/auth/init', values);
+      setSuccessOpen(true);
       onDone();
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to save configuration');
@@ -56,6 +58,14 @@ export default function CoinexConfigForm({ defaults, onDone }: Props) {
       <Box component="form" onSubmit={onSubmit} noValidate>
         <Stack spacing={2}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>CoinEx Configuration</Typography>
+          {/* Validation summary */}
+          {Object.keys(methods.formState.errors).length > 0 && (
+            <Alert severity="error" variant="outlined">
+              {Object.values(methods.formState.errors).map((e: any, idx) => (
+                <div key={idx}>{e?.message}</div>
+              ))}
+            </Alert>
+          )}
           <RHFTextField name="CoinexAccessId" label="Access ID" fullWidth />
           <RHFTextField name="CoinexSecretKey" label="Secret Key" fullWidth />
           <RHFTextField name="workingCapitalPercentage" label="Working Capital %" type="number" inputProps={{ step: '0.01', min: '0', max: '100' }} fullWidth />
@@ -69,8 +79,12 @@ export default function CoinexConfigForm({ defaults, onDone }: Props) {
             {saving ? 'Saving…' : 'Save & Continue'}
           </Button>
         </Stack>
+        <Snackbar open={successOpen} autoHideDuration={2500} onClose={() => setSuccessOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+          <Alert elevation={6} variant="filled" severity="success" sx={{ width: '100%' }}>
+            CoinEx configuration saved successfully.
+          </Alert>
+        </Snackbar>
       </Box>
     </FormProvider>
   );
 }
-

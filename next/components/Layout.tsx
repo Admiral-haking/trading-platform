@@ -1,10 +1,11 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { AppBar, Box, Container, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Container, IconButton, NoSsr, Toolbar, Typography } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
 import ThemeToggle from './ThemeToggle';
-import Sidebar, { drawerWidth } from './Sidebar';
+import Sidebar from './Sidebar';
+import { getToken } from '../utils/axios';
 
 export default function Layout({ children, fontClass }: { children: React.ReactNode; fontClass?: string }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -25,7 +26,9 @@ export default function Layout({ children, fontClass }: { children: React.ReactN
         </Toolbar>
       </AppBar>
 
-      <Sidebar open={mobileOpen} onClose={handleDrawerToggle} />
+      <NoSsr>
+        {!!getToken() && <Sidebar open={mobileOpen} onClose={handleDrawerToggle} />}
+      </NoSsr>
 
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', }}>
         <Toolbar />

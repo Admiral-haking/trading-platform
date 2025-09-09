@@ -23,6 +23,8 @@ then init you just import the view from "views/dashboard/index.ts"
 
 each section in the view must be a splitted component in "views/dashboard/components/[section].tsx"
 
-like you want stat component you put it in "/views/dashboard/compenents/stat.tsx"
+like you want stat component you put it in "/views/dashboard/compenents/stat.tsx";
+
+the current front-end project and file structure is good. analyze it and learn.
 
 are you ready?

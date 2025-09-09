@@ -26,7 +26,7 @@ export class TraderWithdrawal extends TraderDeposit {
     }
 
     async getWithdrawals() {
-        const { data } = await Coinex.get_withdrawal_history({});
+        const { data } = await Coinex.get_withdrawal_history({ limit: 100 });
         return data
     }
 

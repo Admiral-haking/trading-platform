@@ -6,17 +6,20 @@ import logo from '../logo.png';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
-import OutboxOutlinedIcon from '@mui/icons-material/OutboxOutlined';
+import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 function SidebarContent() {
   return (
-    <Box role="navigation" sx={{ width: drawerWidth - 5, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box role="navigation" sx={{ width: drawerWidth - 10, height: '100%', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
       <Toolbar />
       <Divider />
       <List>
@@ -40,6 +43,16 @@ function SidebarContent() {
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>
+        <ListItemButton component={Link} href="/monitor">
+          <ListItemIcon sx={{ color: 'primary.main' }}>
+            <MonitorHeartOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Monitor"
+            secondary="CoinEx queue"
+            secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
+          />
+        </ListItemButton>
         <ListItemButton component={Link} href="/markets">
           <ListItemIcon sx={{ color: 'primary.main' }}>
             <ShowChartOutlinedIcon />
@@ -60,13 +73,13 @@ function SidebarContent() {
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>
-        <ListItemButton component={Link} href="/withdrawal">
+        <ListItemButton component={Link} href="/transfer">
           <ListItemIcon sx={{ color: 'primary.main' }}>
-            <OutboxOutlinedIcon />
+            <SwapHorizOutlinedIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Withdrawal"
-            secondary="Payouts"
+            primary="Transfer"
+            secondary="Move funds"
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>
@@ -90,6 +103,16 @@ function SidebarContent() {
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>
+        <ListItemButton component={Link} href="/configs">
+          <ListItemIcon sx={{ color: 'primary.main' }}>
+            <SettingsOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Configs"
+            secondary="Reconfigure"
+            secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
+          />
+        </ListItemButton>
         <ListItemButton component={Link} href="/telegram-channels">
           <ListItemIcon sx={{ color: 'primary.main' }}>
             <ForumOutlinedIcon />
@@ -97,6 +120,16 @@ function SidebarContent() {
           <ListItemText
             primary="Signal Channels"
             secondary="Management"
+            secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
+          />
+        </ListItemButton>
+        <ListItemButton component={Link} href="/telegram-account">
+          <ListItemIcon sx={{ color: 'primary.main' }}>
+            <AccountCircleOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Telegram Account"
+            secondary="Re-login"
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>

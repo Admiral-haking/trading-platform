@@ -19,7 +19,7 @@ export class TraderDeposit extends TraderBalance {
         try {
             if (!chain) {
                 const { data: info } = await Coinex.get_coin_info({ ccy });
-                return info.chain_info
+                return info.find(x => x.short_name === "USDT")?.chain_info || []
             }
             const { data: { address } } = await Coinex.get_deposit_address({ ccy, chain });
 
@@ -38,11 +38,12 @@ export class TraderDeposit extends TraderBalance {
 
     async getDepositHistory() {
         try {
-            const { data: list } = await Coinex.get_deposit_history({});
+            const { data: list } = await Coinex.get_deposit_history({ limit: 100 });
             return list;
         }
         catch (err) {
             logger.error(err)
+            return []
         }
     }
 }

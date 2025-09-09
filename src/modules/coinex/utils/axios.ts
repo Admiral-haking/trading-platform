@@ -23,7 +23,7 @@ const INTERVAL_MS = 1000;
 
 
 // In-memory state
-let queue: { resolve: () => void }[] = [];
+export const queue: { resolve: () => void, data: { body: Record<string, string | number>, url: string, params: Record<string, string> } }[] = [];
 let currentRequests = 0;
 
 // Process queue every interval
@@ -47,7 +47,13 @@ coinexAxios.interceptors.request.use(
                 currentRequests++;
                 resolve(config);
             } else {
-                queue.push({ resolve: () => resolve(config) });
+                queue.push({
+                    resolve: () => resolve(config), data: {
+                        body: config.data,
+                        url: (config.baseURL || "") + config.url,
+                        params: config.params
+                    }
+                });
             }
         })
 
@@ -92,7 +98,13 @@ coinexAxios.interceptors.request.use(
                 currentRequests++;
                 resolve(config);
             } else {
-                queue.push({ resolve: () => resolve(config) });
+                queue.push({
+                    resolve: () => resolve(config), data: {
+                        body: config.data,
+                        url: (config.baseURL || "") + config.url,
+                        params: config.params
+                    }
+                });
             }
         });
     },

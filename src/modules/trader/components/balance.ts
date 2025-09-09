@@ -22,7 +22,7 @@ export class TraderBalance {
         this.updateBalances()
         setInterval(() => {
             this.updateBalances()
-        }, 1e3 * 60 * 5);
+        }, 1e3 * 60 * 2);
     }
 
     async updateBalances() {

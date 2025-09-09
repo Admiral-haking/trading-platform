@@ -71,7 +71,10 @@ export default function SignalCard({ s }: { s: Signal }) {
           </Stack>
 
           {!!s._id && (
-            <Stack direction="row" justifyContent="flex-end">
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant='caption' color="text.secondary">
+                {s.logs[s.logs.length - 1].message}
+              </Typography>
               <Button
                 onClick={async () => {
                   if (!s._id) return;

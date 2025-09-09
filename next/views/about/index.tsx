@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import AccountForm from './components/AccountForm';
+import AboutUs from './components/AboutUs';
 
 export default function AboutView() {
   return (
@@ -11,16 +13,18 @@ export default function AboutView() {
           Project details, credits, and contact information.
         </Typography>
       </Box>
-      <Box sx={{ maxWidth: 720, width: '100%' }}>
-        <Card>
-          <CardContent>
-            <Typography variant="body2">
-              This personal trading platform integrates Telegram signals, CoinEx trading, and configurable strategies.
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
+      <Grid container spacing={3} sx={{ width: '100%', maxWidth: 900 }}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <AccountForm />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <AboutUs />
+        </Grid>
+      </Grid>
     </Stack>
   );
 }
-
