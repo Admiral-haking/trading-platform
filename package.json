@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --watch src --ignore-watch build --ignore-watch next src/app.ts",
     "build": "rimraf build && tsc && NODE_ENV=production next build ./next",
-    "start": "NODE_ENV=production node build/app.js"
+    "start": "NODE_ENV=production node build/app.js",
+    "zip": "rimraf deploy.zip && zip -r deploy.zip build/*"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

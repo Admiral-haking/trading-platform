@@ -24,3 +24,5 @@ pnpm-debug.log*
 
 private.key
 ai-front.txt
+
+deploy.zip
