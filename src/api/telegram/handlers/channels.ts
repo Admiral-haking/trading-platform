@@ -5,8 +5,8 @@ export const telegramListHandler: Handler = async (req, res, next) => {
         await Telegram.updateChannels();
         res.json(Telegram.channels.map(x => ({
             title: x.title,
-            id: x.id?.toString(),
-            selected: Telegram.getChannels().some(c => c === x.id?.toString())
+            id: x.entity?.id,
+            selected: Telegram.getChannels().some(c => c === x.entity?.id?.toString())
         })))
     }
     catch (err) {

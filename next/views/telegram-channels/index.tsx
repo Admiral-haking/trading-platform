@@ -16,7 +16,7 @@ export default function TelegramChannelsView() {
     try {
       const res = await api.get<Channel[]>('/telegram/list');
       // selected at top
-      const sorted = [...res.data].sort((a, b) => Number(b.selected) - Number(a.selected));
+      const sorted = [...res.data]
       setChannels(sorted);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load channels');
@@ -27,7 +27,7 @@ export default function TelegramChannelsView() {
 
   useEffect(() => { load(); }, []);
 
-  const selectedIds = useMemo(() => channels.filter(c => c.selected).map(c => c.id), [channels]);
+  const selectedIds = useMemo(() => channels.filter(c => c.selected).map(c => c.id), [channels.length]);
 
   // Save on every change with a small debounce
   useEffect(() => {
@@ -76,10 +76,7 @@ export default function TelegramChannelsView() {
             <List>
               {channels.map((c) => (
                 <React.Fragment key={c.id}>
-                  <ListItem secondaryAction={<FormControlLabel control={<Checkbox checked={c.selected} onChange={() => toggle(c.id)} />} label={c.selected ? 'Selected' : 'Hidden'} /> }>
-                    <ListItemIcon>
-                      <Checkbox edge="start" checked={c.selected} tabIndex={-1} disableRipple onChange={() => toggle(c.id)} />
-                    </ListItemIcon>
+                  <ListItem secondaryAction={<FormControlLabel control={<Checkbox checked={c.selected} onChange={() => toggle(c.id)} />} label={c.selected ? 'Selected' : 'Hidden'} />}>
                     <ListItemText
                       primary={<Typography sx={{ fontWeight: 600 }}>{c.title}</Typography>}
                       secondary={<Typography color="primary" variant="caption" sx={{ fontWeight: 600 }}>{c.id}</Typography>}

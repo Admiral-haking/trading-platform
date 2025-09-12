@@ -1,23 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import api from '../../utils/axios';
 import type { CoinexFullResponse, Signal, SignalState } from '../../types/coinex';
 import SignalCard from './components/SignalCard';
 import useInterval from '../../hooks/useInterval';
-import { MOCK_SIGNALS } from '../dashboard/mocks';
 
-const allStates: SignalState[] = ['pending', 'order placed', 'filled', 'finished'];
+const allStates: SignalState[] = ['pending', 'order placed', 'filled', 'cancelled', 'finished'];
 
 export default function SignalsView() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [filter, setFilter] = useState<SignalState | 'all'>('all');
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const load = async () => {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
-      setSignals([...(res.data.signals || []), ...MOCK_SIGNALS]);
+      setSignals([...(res.data.signals || [])]);
+      setError("")
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load signals');
     }
@@ -35,6 +37,15 @@ export default function SignalsView() {
     }
     return s;
   }, [signals, filter, q]);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => { setPage(1); }, [filter, q]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: signals.length };
@@ -59,17 +70,37 @@ export default function SignalsView() {
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-          <TextField placeholder="Search market or messageId" value={q} onChange={(e) => setQ(e.target.value)} size="small" sx={{ minWidth: 260 }} />
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TextField placeholder="Search market or messageId" value={q} onChange={(e) => setQ(e.target.value)} size="small" sx={{ minWidth: 260 }} />
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel id="page-size-label">Per page</InputLabel>
+              <Select labelId="page-size-label" label="Per page" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
+                {[20, 50, 100].map((n) => (
+                  <MenuItem key={n} value={n}>{n}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        </Stack>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="caption" sx={{ opacity: 0.8 }}>{filtered.length.toLocaleString()} results</Typography>
+          <Pagination count={totalPages} page={page} onChange={(_, v) => setPage(v)} size="small" color="primary" />
         </Stack>
       </Paper>
 
       <Grid container spacing={2}>
-        {filtered.map((s) => (
+        {paged.map((s) => (
           <Grid key={`${s.messageId}-${s.state}`} item xs={12} md={6}>
             <SignalCard s={s} />
           </Grid>
         ))}
       </Grid>
+
+      {totalPages > 1 && (
+        <Stack alignItems="center">
+          <Pagination count={totalPages} page={page} onChange={(_, v) => setPage(v)} color="primary" />
+        </Stack>
+      )}
 
       {error && <Typography color="error" variant="body2">{error}</Typography>}
     </Stack>

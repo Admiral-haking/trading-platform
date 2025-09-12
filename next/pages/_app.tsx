@@ -6,6 +6,7 @@ import { ColorModeProvider, useColorMode } from '../lib/ColorModeProvider';
 import { createAppTheme } from '../theme';
 import Layout from '../components/Layout';
 import AuthGuard from '../components/common/AuthGuard';
+import WSListener from '../components/common/WSListener';
 
 function ThemeRoot({ children }: { children: React.ReactNode }) {
   const { mode } = useColorMode();
@@ -26,6 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <AuthGuard>
             <Component {...pageProps} />
           </AuthGuard>
+          <WSListener />
         </Layout>
       </ThemeRoot>
     </ColorModeProvider>

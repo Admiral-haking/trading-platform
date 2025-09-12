@@ -6,4 +6,6 @@ import { DynamicConfigs } from "../../../utils/config";
 
 const stringSession = new StringSession(DynamicConfigs.get("telegram"));
 
-export const telegram = new TelegramClient(stringSession, telegramKeys.apiId, telegramKeys.apiHash, { connectionRetries: 5 });
+export const telegram = new TelegramClient(stringSession, telegramKeys.apiId, telegramKeys.apiHash, {
+    connectionRetries: 5,
+});

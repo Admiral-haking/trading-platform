@@ -21,10 +21,14 @@ export function LLMReplyMessageToJSON(apiKey: string) {
             return returnObject;
         },
         think: () => {
-            if (!_message || _message.length <= 70) return;
+            if (!_message) return;
             handle(_message, apiKey)
                 .then(res => {
                     onJson?.(res)
+                })
+                .catch(err => {
+                    console.log(err);
+                    onFail?.(err)
                 })
         }
     }
@@ -67,9 +71,14 @@ async function handle(message: string, apiKey: string): Promise<LLMOrderReturnTy
         );
 
         const modelResponse: string = response.data.choices[0].message.content.trim();
+
+        console.log(modelResponse);
+
         return JSON.parse(modelResponse);
 
     } catch (error: any) {
+        console.log(error);
+
         return { order: "continue" }
     }
 }

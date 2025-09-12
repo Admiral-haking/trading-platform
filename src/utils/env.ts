@@ -18,7 +18,8 @@ export function fromEnv<T>(key: string, parse: Parse<T>, fallback?: T): T {
 
 export const env = {
   nodeEnv: fromEnv('NODE_ENV', asString, 'development'),
-  port: fromEnv('PORT', asInt, 3000),
-  mongoUri: fromEnv('MONGODB_URI', asString, 'mongodb://localhost:27017/trading-platform')
+  port: fromEnv('PORT', asInt, 4040),
+  mongoUri: fromEnv('MONGODB_URI', asString, 'mongodb://localhost:27017/trading-platform'),
+  name: fromEnv("NAME", asString, '')
 };
 

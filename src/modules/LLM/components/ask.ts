@@ -33,6 +33,9 @@ export function LLMMessageToJSON(apiKey: string) {
 
                     onJson?.(result.data)
                 })
+                .catch(err => {
+                    onFail?.(err)
+                })
         }
     }
 

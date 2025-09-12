@@ -5,6 +5,7 @@ import { Coinex } from "../../coinex";
 import { Market } from "../../market";
 import { initialTpFromSignal } from "../utils/position";
 import { TraderOrder } from "./order";
+import { broadcast } from "../../../ws";
 
 export class TraderPosition extends TraderOrder {
 
@@ -35,22 +36,33 @@ export class TraderPosition extends TraderOrder {
 
     async closePosition(signal: Signal) {
 
-        await logSignal(signal, "closing position...");
+        try {
+            await logSignal(signal, "closing position...");
 
-        const { data } = await Coinex.close_position({
-            market: signal.position,
-            market_type: "FUTURES",
-            type: "market",
-            client_id: signal._id.toString()
-        })
+            const { data } = await Coinex.close_position({
+                market: signal.market,
+                market_type: "FUTURES",
+                type: "market",
+                client_id: signal._id.toString()
+            })
 
-        await logSignal(signal, "position closed successfully!");
-        signal.state = 'finished';
-        signal.realized_pnl = Number(data.realized_pnl);
+            await logSignal(signal, "position closed successfully!");
+            signal.state = 'finished';
+            signal.realized_pnl = Number(data.realized_pnl);
 
 
 
-        await signal.save();
+            await signal.save();
+
+            try {
+                broadcast({ type: 'position:closed', payload: { _id: signal._id, market: signal.market, realized_pnl: signal.realized_pnl } });
+            } catch { }
+        }
+        catch (err: any) {
+            logger.error(err)
+
+            await logSignal(signal, "closing failed: " + err.message);
+        }
     }
 
     async setPositionSlAndTp(signal: Signal) {

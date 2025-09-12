@@ -12,6 +12,7 @@ const schema = z.object({
   workingCapitalPercentage: z.coerce.number({ error: 'Enter a number' }).min(0.01, 'Must be > 0').max(100, 'Max 100'),
   eachTradePercentage: z.coerce.number({ error: 'Enter a number' }).min(0.01, 'Must be > 0').max(100, 'Max 100'),
   strategy: z.enum(['fast-tp', 'risk-free'], { error: 'Select a strategy' }),
+  active: z.enum(['false', 'true'])
 });
 
 export type CoinexConfigValues = z.infer<typeof schema>;
@@ -73,6 +74,10 @@ export default function CoinexConfigForm({ defaults, onDone }: Props) {
           <RHFSelect name="strategy" label="Strategy" fullWidth>
             <MenuItem value="fast-tp">fast-tp</MenuItem>
             <MenuItem value="risk-free">risk-free</MenuItem>
+          </RHFSelect>
+          <RHFSelect name="active" label="Active" fullWidth>
+            <MenuItem value="false">Deactivated</MenuItem>
+            <MenuItem value="true">Activated</MenuItem>
           </RHFSelect>
           {error && <Typography color="error" variant="body2">{error}</Typography>}
           <Button type="submit" variant="contained" size="large" disabled={saving}>

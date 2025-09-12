@@ -7,9 +7,9 @@ import api from '../../../utils/axios';
 import { RHFTextField, RHFSelect } from '../../../components/hook-form';
 
 const schema = z.object({
-  withdrawalDayOfWeek: z.coerce.number({ invalid_type_error: 'Select a day' }).int().min(0).max(6),
-  withdrawalBase: z.coerce.number({ invalid_type_error: 'Enter a number' }).positive('Must be > 0'),
-  withdrawalTakeProfitPercentage: z.coerce.number({ invalid_type_error: 'Enter a number' }).min(0, 'Must be >= 0').max(100, 'Max 100'),
+  withdrawalDayOfWeek: z.coerce.number({ error: 'Select a day' }).int().min(0).max(6),
+  withdrawalBase: z.coerce.number({ error: 'Enter a number' }).positive('Must be > 0'),
+  withdrawalTakeProfitPercentage: z.coerce.number({ error: 'Enter a number' }).min(0, 'Must be >= 0').max(100, 'Max 100'),
   wallet: z.string().min(1, 'Wallet is required'),
 });
 
@@ -32,7 +32,7 @@ const days = [
 
 export default function WithdrawalConfigForm({ defaults, onDone }: Props) {
   const methods = useForm<WithdrawalConfigValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: {
       withdrawalDayOfWeek: 4,
       withdrawalBase: 500,

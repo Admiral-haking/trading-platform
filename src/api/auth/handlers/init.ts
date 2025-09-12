@@ -16,6 +16,7 @@ export const initStatusHandler: Handler = async (req, res, next) => {
             withdrawalTakeProfitPercentage: '50',
             wallet: '',
             strategy: '',
+            active: 'false',
             ...DynamicConfigs.configs
         }
 

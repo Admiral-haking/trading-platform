@@ -1,10 +1,11 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { env } from "./env";
 
 const homedir = os.homedir();
 
-const configFile = path.join(homedir, "trading.conf.json");
+const configFile = path.join(homedir, `trading${env.name}.conf.json`);
 
 if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "{}");
 

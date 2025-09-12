@@ -83,6 +83,7 @@ class TelegramService {
                             }]
                         })
                     })
+                    .think()
             },
             updateSignal: ({ id, message, messageId }) => {
                 const safeList = this.getChannels();
@@ -105,6 +106,7 @@ class TelegramService {
                             }]
                         })
                     })
+                    .think()
             },
             deleteSignal: ({ messageId }) => {
                 Trader.incomeDeleteSignal(messageId)
@@ -117,6 +119,7 @@ class TelegramService {
                         if (order === "continue") return;
                         Trader.incomeExitSignal(messageId)
                     })
+                    .think()
             }
         })
         this.isListening = true;
@@ -124,8 +127,7 @@ class TelegramService {
 
 
     setChannels(...ids: string[]) {
-        const content = DynamicConfigs.get("channels") || "[]";
-        const list: string[] = JSON.parse(content);
+        const list: string[] = [];
 
         list.push(...ids);
 

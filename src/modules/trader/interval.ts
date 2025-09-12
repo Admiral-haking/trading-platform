@@ -17,7 +17,7 @@ export class IntervalTrader extends LogicTrader {
         psi = setInterval(() => {
             if (!this.isApiReady()) return;
             this.placeSignalsAsOrder();
-        }, 1e3 * 60 * 5);
+        }, 1e3 * 60);
     }
 
 

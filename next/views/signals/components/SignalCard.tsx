@@ -34,7 +34,7 @@ export default function SignalCard({ s }: { s: Signal }) {
   const pnlColor = pnl > 0 ? 'success.main' : pnl < 0 ? 'error.main' : 'text.secondary';
   const tpSet = (s.takeProfit || []).length > 0;
   const slSet = typeof s.stopLoss === 'number' && s.stopLoss > 0;
-  const stateColor = s.state === 'pending' ? 'warning' : s.state === 'filled' ? 'success' : s.state === 'order placed' ? 'info' : 'default';
+  const stateColor = s.state === 'pending' ? 'warning' : s.state === 'filled' ? 'success' : s.state === 'order placed' ? 'info' : s.state === 'finished' ? 'primary' : 'default';
 
   if (hidden) return null;
 
@@ -70,11 +70,11 @@ export default function SignalCard({ s }: { s: Signal }) {
             <Chip icon={<GppMaybeRoundedIcon />} label={slSet ? 'SL set' : 'SL missing'} size="small" color={slSet ? 'success' : 'warning'} variant={slSet ? 'filled' : 'outlined'} />
           </Stack>
 
-          {!!s._id && (
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant='caption' color="text.secondary">
-                {s.logs[s.logs.length - 1].message}
-              </Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant='caption' color="text.secondary">
+              {s.logs[s.logs.length - 1]?.message}
+            </Typography>
+            {s.state !== 'pending' && s.state !== 'cancelled' && s.state !== 'finished' && (
               <Button
                 onClick={async () => {
                   if (!s._id) return;
@@ -93,8 +93,8 @@ export default function SignalCard({ s }: { s: Signal }) {
               >
                 {closing ? 'Closing…' : 'Close Position'}
               </Button>
-            </Stack>
-          )}
+            )}
+          </Stack>
         </Stack>
       </CardContent>
       <SignalLogsDialog open={open} onClose={() => setOpen(false)} logs={s.logs || []} />

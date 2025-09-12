@@ -11,22 +11,22 @@ export default function CheckPage() {
     (async () => {
       try {
         // 1) Ensure Telegram is authenticated
-        const tg = await api.get<{ isAuth?: boolean }>("/telegram/check");
-        const isAuth = Boolean(tg.data?.isAuth);
-        if (!active) return;
-        if (!isAuth) {
-          router.replace('/login-telegram');
-          return;
-        }
+        // const tg = await api.get<{ isAuth?: boolean }>("/telegram/check");
+        // const isAuth = Boolean(tg.data?.isAuth);
+        // if (!active) return;
+        // if (!isAuth) {
+        //   router.replace('/login-telegram');
+        //   return;
+        // }
 
         // 2) Ensure deepSeekApiKey exists and CoinEx config is complete
         const init = await api.get<{ user: any; configs: Record<string, string> }>("/auth/init");
         const cfg = init.data?.configs || {};
-        const hasDeepseek = Boolean(cfg.deepSeekApiKey);
-        if (!hasDeepseek) {
-          router.replace('/deep-seek');
-          return;
-        }
+        // const hasDeepseek = Boolean(cfg.deepSeekApiKey);
+        // if (!hasDeepseek) {
+        //   router.replace('/deep-seek');
+        //   return;
+        // }
 
         const requiredCoinexKeys = ['CoinexAccessId', 'CoinexSecretKey', 'workingCapitalPercentage', 'eachTradePercentage', 'strategy'] as const;
         const missingCoinex = requiredCoinexKeys.some((k) => !cfg[k]);

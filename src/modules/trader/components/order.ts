@@ -5,6 +5,8 @@ import { Market } from "../../market";
 import { sizeOrderFromNotionalLimit } from "../utils/notional";
 import { orderStateToSignalState } from "../utils/state";
 import { TraderWithdrawal } from "./withdrawal";
+import { broadcast } from "../../../ws";
+import { compareBasedOnSide } from "../utils/compare";
 
 export class TraderOrder extends TraderWithdrawal {
 
@@ -36,10 +38,10 @@ export class TraderOrder extends TraderWithdrawal {
 
         const last_price = Market.getPrice(signal);
 
-        if (last_price !== -1 && last_price > signal.entry) {
+        if (last_price !== -1 && compareBasedOnSide(signal.position, last_price, signal.entry)) {
             const notional = sizeOrderFromNotionalLimit({
                 price: signal.entry,
-                targetNotionalUSDT: this.eachTraderAmount,
+                targetNotionalUSDT: this.eachTraderAmount * signal.leverage,
                 marketFullStatus: Market.markets[signal.market.toUpperCase()]
             })
 
@@ -79,7 +81,7 @@ export class TraderOrder extends TraderWithdrawal {
         }
         const notional = sizeOrderFromNotionalLimit({
             price: last_price,
-            targetNotionalUSDT: this.eachTraderAmount,
+            targetNotionalUSDT: this.eachTraderAmount * signal.leverage,
             marketFullStatus: Market.markets[signal.market.toUpperCase()]
         })
 
@@ -142,6 +144,10 @@ export class TraderOrder extends TraderWithdrawal {
 
 
                 await logSignal(signal, "Position Founded. Changing State to 'filled'.");
+
+                try {
+                    broadcast({ type: 'order:filled', payload: { _id: signal._id, market: signal.market, orderId: signal.orderId, positionId: signal.positionId } });
+                } catch { }
             }
         }
         catch { }

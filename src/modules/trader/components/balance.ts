@@ -2,6 +2,7 @@ import { DynamicConfigs } from "../../../utils/config";
 import { logger } from "../../../utils/logger";
 import { Coinex } from "../../coinex";
 import type { SpotBalanceRecord } from "../../coinex/types/spot"
+import { clampPercent } from "../utils/compare";
 
 export class TraderBalance {
     spotAssets: SpotBalanceRecord[] = [];
@@ -29,41 +30,39 @@ export class TraderBalance {
 
         const accessId = DynamicConfigs.get("CoinexAccessId");
         const secretKey = DynamicConfigs.get("CoinexSecretKey");
-
-        if (!accessId || !secretKey) return;
+        if (!accessId || !secretKey) {
+            logger.warn("Coinex credentials missing; skipped updateBalances()");
+            return;
+        }
 
         try {
             const { data: spot } = await Coinex.spot_balance();
-
             this.spotAssets = spot;
 
-            const spotUsdt = spot.find(x => x.ccy === "USDT")
-            this.spotUSDTBalance = Number(spotUsdt?.available || "0");
-            this.spotUSDTFrozenBalance = Number(spotUsdt?.frozen || "0")
+            const spotUsdt = (Array.isArray(spot) ? spot : []).find(x => x?.ccy === "USDT");
+            this.spotUSDTBalance = Number(spotUsdt?.available ?? 0) || 0;
+            this.spotUSDTFrozenBalance = Number(spotUsdt?.frozen ?? 0) || 0;
 
             const { data: features } = await Coinex.features_balance();
+            const featuresUsdt = (Array.isArray(features) ? features : []).find(x => x?.ccy === "USDT");
 
-            const featuresUsdt = (features || []).find(x => x.ccy === 'USDT')
+            this.featuresUSDTBalance = Number(featuresUsdt?.available ?? 0) || 0;
+            this.featuresUSDTFrozenBalance = Number(featuresUsdt?.frozen ?? 0) || 0;
 
-            this.featuresUSDTBalance = Number(featuresUsdt?.available || "0");
-            this.featuresUSDTFrozenBalance = Number(featuresUsdt?.frozen || "0");
-
+            // As you intended: total USDT on the account (available + frozen)
             this.fullFeatureBalance = this.featuresUSDTBalance + this.featuresUSDTFrozenBalance;
 
+            // Read, sanitize, and clamp percentages
+            const wcp = clampPercent(DynamicConfigs.get("workingCapitalPercentage"), 50); // e.g., 80
+            const etp = clampPercent(DynamicConfigs.get("eachTradePercentage"), 10);      // e.g., 10
 
-            const wcp = Number(DynamicConfigs.get("workingCapitalPercentage") || "50");
-            const etp = Number(DynamicConfigs.get("eachTradePercentage") || "10");
+            // Predictable, monotonic rounding: floor at each step
+            this.WorkingCapital = Math.max(0, Math.floor((this.fullFeatureBalance * wcp) / 100));
+            this.eachTraderAmount = Math.max(0, Math.floor((this.WorkingCapital * etp) / 100));
+            // (Equivalently: Math.floor(this.fullFeatureBalance * wcp * etp / 10_000))
 
-            const ffbUnit = this.fullFeatureBalance / 100;
-
-            this.WorkingCapital = Math.ceil(ffbUnit * wcp);
-
-            const wcUnit = this.WorkingCapital / 100;
-
-            this.eachTraderAmount = Math.trunc(wcUnit * etp)
-        }
-        catch (err) {
-            logger.error(err)
+        } catch (err) {
+            logger.error("updateBalances() failed:", err);
         }
 
     }

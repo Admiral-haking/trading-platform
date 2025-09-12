@@ -14,6 +14,7 @@ import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 
 const drawerWidth = 280;
 
@@ -110,6 +111,16 @@ function SidebarContent() {
           <ListItemText
             primary="Configs"
             secondary="Reconfigure"
+            secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
+          />
+        </ListItemButton>
+        <ListItemButton component={Link} href="/followers">
+          <ListItemIcon sx={{ color: 'primary.main' }}>
+            <GroupOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Followers"
+            secondary="Webhooks"
             secondaryTypographyProps={{ color: 'primary.main', variant: 'caption', sx: { fontWeight: 600, letterSpacing: 0.3 } }}
           />
         </ListItemButton>

@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import http from 'http';
 import next from 'next';
 import path from 'path';
 
@@ -6,9 +7,11 @@ import apiRouter from './api';
 import { connectToDatabase } from './models';
 import { Trader } from './modules/trader';
 import { logger } from './utils/logger';
+import { initWebSocket } from './ws';
+import { env } from './utils/env';
 
-const dev = process.env.NODE_ENV !== 'production';
-const port = parseInt(process.env.PORT || '4040', 10);
+const dev = env.nodeEnv !== 'production';
+const port = env.port;
 
 // Always resolve the Next app dir from project root
 const nextDir = path.resolve(process.cwd(), 'next');
@@ -35,7 +38,11 @@ async function main() {
   // Ensure DB is connected before accepting requests
   await connectToDatabase();
 
-  app.listen(port, '0.0.0.0', () => {
+  const server = http.createServer(app);
+
+  initWebSocket(server);
+
+  server.listen(port, '0.0.0.0', () => {
     // eslint-disable-next-line no-console
     logger.info(`Server listening on http://localhost:${port} (dev=${dev})`);
     Trader.start()

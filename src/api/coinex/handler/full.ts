@@ -11,7 +11,7 @@ export const coinexFullDataHandler: Handler = async (req, res, next) => {
             featuresAvailableUSDT: Trader.featuresUSDTBalance,
             featuresFrozenUSDT: Trader.featuresUSDTFrozenBalance,
             markets: Market.markets,
-            signals: await Signals.find({ state: { $ne: "cancelled" } })
+            signals: await Signals.find({}, null, { sort: { _id: -1 } })
         })
     }
     catch (err) {
