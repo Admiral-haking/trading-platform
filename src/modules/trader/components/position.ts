@@ -50,6 +50,7 @@ export class TraderPosition extends TraderOrder {
             signal.state = 'finished';
             signal.realized_pnl = Number(data.realized_pnl);
 
+            signal.coinex_position = data
 
 
             await signal.save();
@@ -104,12 +105,15 @@ export class TraderPosition extends TraderOrder {
         for (let index = 0; index < data.length; index++) {
             const position = data[index];
 
+            const p = await Signals.findOne({ positionId: position.position_id, state: { $ne: "finished" } })
+            if (!p) continue;
             await Signals.updateOne(
                 { positionId: position.position_id },
                 {
                     $set: {
                         state: "finished",
-                        realized_pnl: Number(position.realized_pnl)
+                        realized_pnl: Number(position.realized_pnl),
+                        coinex_position: position
                     },
                     $push: {
                         logs: {

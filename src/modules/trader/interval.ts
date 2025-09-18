@@ -42,6 +42,7 @@ export class IntervalTrader extends LogicTrader {
 
 
     checkFinishedPositionsInterval() {
+        this.updateFinishedPositions();
         clearInterval(cfpi);
         cfpi = setInterval(() => {
             if (!this.isApiReady()) return;

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import api from '../../utils/axios';
-import type { CoinexFullResponse, Signal, SignalState } from '../../types/coinex';
+import type { CoinexFullResponse, Markets, Signal, SignalState } from '../../types/coinex';
 import SignalCard from './components/SignalCard';
 import useInterval from '../../hooks/useInterval';
 
@@ -9,16 +9,17 @@ const allStates: SignalState[] = ['pending', 'order placed', 'filled', 'cancelle
 
 export default function SignalsView() {
   const [signals, setSignals] = useState<Signal[]>([]);
+  const [markets, setMarkets] = useState<Markets>({});
   const [filter, setFilter] = useState<SignalState | 'all'>('all');
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
-
   const load = async () => {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
       setSignals([...(res.data.signals || [])]);
+      setMarkets(res.data.markets || {});
       setError("")
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load signals');
@@ -91,7 +92,7 @@ export default function SignalsView() {
       <Grid container spacing={2}>
         {paged.map((s) => (
           <Grid key={`${s.messageId}-${s.state}`} item xs={12} md={6}>
-            <SignalCard s={s} />
+            <SignalCard s={s} markets={markets} />
           </Grid>
         ))}
       </Grid>

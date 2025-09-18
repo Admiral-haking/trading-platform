@@ -32,7 +32,7 @@ export default function DashboardView() {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
       setData({ ...res.data, signals: [...res.data.signals, ...MOCK_SIGNALS] });
-    } catch {}
+    } catch { }
   }, 2000);
 
   if (!data) return null;
@@ -59,7 +59,7 @@ export default function DashboardView() {
 
       <Stack spacing={2}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>Signals</Typography>
-        <SignalsByState signals={data.signals} />
+        <SignalsByState signals={data.signals} markets={data.markets} />
       </Stack>
     </Stack>
   );

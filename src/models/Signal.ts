@@ -1,5 +1,6 @@
 import { Document, model, Schema, Types } from "mongoose";
 import { LLMReturnType } from "../modules/LLM/components/types";
+import { ClosePositionResult, FinishedPosition, PendingPosition } from "../modules/coinex/types/position";
 
 
 export type SignalState = 'pending' | 'order placed' | 'filled' | 'cancelled' | 'finished'
@@ -28,6 +29,8 @@ export interface Signal extends Document<Types.ObjectId>, LLMReturnType {
         timestamp: number
         message: string
     }[]
+
+    coinex_position?: PendingPosition | ClosePositionResult | FinishedPosition
 }
 
 
@@ -96,6 +99,9 @@ const SignalSchema: Schema = new Schema<Signal>(
                 message: { type: String, required: true }
             }],
             default: []
+        },
+        coinex_position: {
+            type: Schema.Types.Mixed,
         }
     },
     {

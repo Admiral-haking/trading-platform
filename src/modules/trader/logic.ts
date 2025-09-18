@@ -144,6 +144,24 @@ export class LogicTrader extends TraderPosition {
 
             await wait(.25)
         }
+
+        await Signals.updateMany(
+            {
+                createdAt: { $lt: new Date(Date.now() - (1e3 * 60 * 60)) },
+                state: "pending"
+            },
+            {
+                $set: {
+                    state: "cancelled"
+                },
+                $push: {
+                    logs: {
+                        timestamp: Date.now(),
+                        message: "out dated!"
+                    }
+                }
+            }
+        )
     }
 
 
@@ -185,7 +203,7 @@ export class LogicTrader extends TraderPosition {
             if (!position) continue;
 
 
-            await Signals.updateOne({ _id: signal._id }, { $set: { realized_pnl: Number(position.unrealized_pnl) } })
+            await Signals.updateOne({ _id: signal._id }, { $set: { realized_pnl: Number(position.unrealized_pnl), coinex_position: position } })
 
             try {
                 await this.setPositionSlAndTp(signal)
