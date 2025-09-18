@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, CardContent, Chip, Stack, Typography, IconButton, Tooltip, Button, Box } from '@mui/material';
+import React, { useMemo } from 'react';
+import { Card, CardContent, Chip, Stack, Typography, IconButton, Tooltip, Button, Box, Divider } from '@mui/material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
@@ -12,6 +12,7 @@ import STChip from './sl-chip';
 import Detail from './detail';
 import { green } from '@mui/material/colors';
 import { getTime } from '../utils/time';
+import TradeProgressBar from './progress';
 
 function fmt(n: number) {
   const d = Math.abs(n) < 1 ? 4 : 2;
@@ -63,6 +64,21 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
       height: '100%',
       position: 'relative'
     }}>
+      {
+        s.coinex_position &&
+        "ath_position_amount" in s.coinex_position &&
+        "avg_entry_price" in s.coinex_position &&
+        s.coinex_position?.realized_pnl &&
+
+        <TradeProgressBar
+          amount={Number(s.coinex_position.ath_position_amount)}
+          entryPrice={Number(s.coinex_position.avg_entry_price)}
+          realizedPnl={Number(s.coinex_position.realized_pnl)}
+          stopLoss={Number(s.coinex_position.stop_loss_price || "0") || Number(s.stopLoss)}
+          takeProfit={Number(s.coinex_position.take_profit_price || "0") || s.takeProfit[s.takeProfit.length - 1]}
+        />
+      }
+
       <CardContent>
         <Stack spacing={1.25}>
           <Stack direction="row" alignItems="center" spacing={1.5} justifyContent="space-between">
@@ -101,6 +117,7 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10" opacity={0.5}></path><path fill="currentColor" d="M12 17.75a.75.75 0 0 0 .75-.75v-6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75M12 7a1 1 0 1 1 0 2a1 1 0 0 1 0-2"></path></svg>}
                 />
               }
+              <Divider sx={{ my: 1 }} />
               {
                 s.takeProfit.map((x, i) => <Detail
                   text={`Take Profit ${i + 1}`}
@@ -109,6 +126,29 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   color={(green as any)[((i + 2) * 100)] || "success.main"}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10" opacity={0.5}></path><path d="M12 5.25a.75.75 0 0 1 .75.75v.317c1.63.292 3 1.517 3 3.183a.75.75 0 0 1-1.5 0c0-.678-.564-1.397-1.5-1.653v3.47c1.63.292 3 1.517 3 3.183s-1.37 2.891-3 3.183V18a.75.75 0 0 1-1.5 0v-.317c-1.63-.292-3-1.517-3-3.183a.75.75 0 0 1 1.5 0c0 .678.564 1.397 1.5 1.652v-3.469c-1.63-.292-3-1.517-3-3.183s1.37-2.891 3-3.183V6a.75.75 0 0 1 .75-.75m-.75 2.597c-.936.256-1.5.975-1.5 1.653s.564 1.397 1.5 1.652zm3 6.653c0-.678-.564-1.397-1.5-1.652v3.304c.936-.255 1.5-.974 1.5-1.652"></path></g></svg>}
                 />)
+              }
+              <Divider sx={{ my: 1 }} />
+              {
+                !!s.coinex_position && <>
+                  {
+                    "avg_entry_price" in s.coinex_position &&
+                    <Detail
+                      text='Avg Entry'
+                      color="warning.main"
+                      value={fmt(Number(s.coinex_position.avg_entry_price)).concat(" USDT")}
+                      icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M19.717 20.362C21.143 19.585 22 18.587 22 17.5c0-1.152-.963-2.204-2.546-3C17.623 13.58 14.962 13 12 13s-5.623.58-7.454 1.5C2.963 15.296 2 16.348 2 17.5s.963 2.204 2.546 3C6.377 21.42 9.038 22 12 22c3.107 0 5.882-.637 7.717-1.638" opacity={0.5}></path><path fill="currentColor" fillRule="evenodd" d="M5 8.515C5 4.917 8.134 2 12 2s7 2.917 7 6.515c0 3.57-2.234 7.735-5.72 9.225a3.28 3.28 0 0 1-2.56 0C7.234 16.25 5 12.084 5 8.515M12 11a2 2 0 1 0 0-4a2 2 0 0 0 0 4" clipRule="evenodd"></path></svg>}
+                    />
+                  }
+                  {
+                    "ath_position_amount" in s.coinex_position &&
+                    <Detail
+                      text='Amount'
+                      color="secondary.main"
+                      value={fmt(Number(s.coinex_position.ath_position_amount)).concat(" ", s.market.replace("USDT", ""))}
+                      icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M3.778 18.326C4.787 19 6.19 19 9 19h6c2.809 0 4.213 0 5.222-.674a4 4 0 0 0 1.104-1.104C22 16.213 22 14.81 22 12s0-4.213-.674-5.222a4 4 0 0 0-1.104-1.104C19.213 5 17.81 5 15 5H9c-2.809 0-4.213 0-5.222.674a4 4 0 0 0-1.104 1.104C2 7.787 2 9.19 2 12s0 4.213.674 5.222a4 4 0 0 0 1.104 1.104" opacity={0.5}></path><path fill="currentColor" d="M5.5 15.75a.75.75 0 0 1-.75-.75V9a.75.75 0 0 1 1.5 0v6a.75.75 0 0 1-.75.75M17.75 15a.75.75 0 0 0 1.5 0V9a.75.75 0 0 0-1.5 0z"></path><path fill="currentColor" fillRule="evenodd" d="M8.25 12a3.75 3.75 0 1 0 7.5 0a3.75 3.75 0 0 0-7.5 0m1.5 0a2.25 2.25 0 1 0 4.5 0a2.25 2.25 0 0 0-4.5 0" clipRule="evenodd"></path></svg>}
+                    />
+                  }
+                </>
               }
             </Box>
             {
@@ -120,13 +160,14 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M6.222 4.601a9.5 9.5 0 0 1 1.395-.771c1.372-.615 2.058-.922 2.97-.33c.913.59.913 1.56.913 3.5v1.5c0 1.886 0 2.828.586 3.414s1.528.586 3.414.586H17c1.94 0 2.91 0 3.5.912c.592.913.285 1.599-.33 2.97a9.5 9.5 0 0 1-10.523 5.435A9.5 9.5 0 0 1 6.222 4.601" opacity={0.5}></path><path fill="currentColor" d="M21.446 7.069a8.03 8.03 0 0 0-4.515-4.515C15.389 1.947 14 3.344 14 5v4a1 1 0 0 0 1 1h4c1.657 0 3.053-1.39 2.446-2.931"></path></svg>}
                 />
                 {
-                  "unrealized_pln" in s.coinex_position && <Detail
+                  "unrealized_pnl" in s.coinex_position && <Detail
                     text='UnRealized PNL'
-                    color={Number(s.coinex_position?.unrealized_pln || 0) > 0 ? "success.main" : "error.main"}
-                    value={fmt(Number(s.coinex_position?.unrealized_pln || 0)).concat(" USDT")}
+                    color={Number(s.coinex_position?.unrealized_pnl || 0) > 0 ? "success.main" : "error.main"}
+                    value={fmt(Number(s.coinex_position?.unrealized_pnl || 0)).concat(" USDT")}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M14 20.5V4.25c0-.728-.002-1.2-.048-1.546c-.044-.325-.115-.427-.172-.484s-.159-.128-.484-.172C12.949 2.002 12.478 2 11.75 2s-1.2.002-1.546.048c-.325.044-.427.115-.484.172s-.128.159-.172.484c-.046.347-.048.818-.048 1.546V20.5z" clipRule="evenodd"></path><path fill="currentColor" d="M8 8.75A.75.75 0 0 0 7.25 8h-3a.75.75 0 0 0-.75.75V20.5H8zm12 5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75v6.75H20z" opacity={0.7}></path><path fill="currentColor" d="M1.75 20.5a.75.75 0 0 0 0 1.5h20a.75.75 0 0 0 0-1.5z" opacity={0.5}></path></svg>}
                   />
                 }
+                <Divider sx={{ my: 1 }} />
                 <Detail
                   text='Last Price'
                   value={fmt(lastPrice).concat(" USDT")}
@@ -137,6 +178,7 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   value={fmt(marketPrice).concat(" USDT")}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="m17.967 6.558l-1.83-1.83c-1.546-1.545-2.318-2.318-3.321-2.605c-1.003-.288-2.068-.042-4.197.45l-1.228.283c-1.792.413-2.688.62-3.302 1.233S3.27 5.6 2.856 7.391l-.284 1.228c-.491 2.13-.737 3.194-.45 4.197c.288 1.003 1.061 1.775 2.606 3.32l1.83 1.83C9.248 20.657 10.592 22 12.262 22c1.671 0 3.015-1.344 5.704-4.033c2.69-2.69 4.034-4.034 4.034-5.705c0-1.67-1.344-3.015-4.033-5.704" opacity={0.5}></path><path fill="currentColor" d="M11.147 14.328c-.673-.672-.667-1.638-.265-2.403a.75.75 0 0 1 1.04-1.046c.34-.18.713-.276 1.085-.272a.75.75 0 0 1-.014 1.5a.88.88 0 0 0-.609.277c-.387.387-.285.775-.177.884c.11.109.497.21.884-.177c.784-.784 2.138-1.044 3.006-.177c.673.673.667 1.639.264 2.404a.75.75 0 0 1-1.04 1.045a2.2 2.2 0 0 1-1.472.232a.75.75 0 1 1 .302-1.47c.177.037.463-.021.708-.266c.388-.388.286-.775.177-.884s-.496-.21-.884.177c-.784.784-2.138 1.044-3.005.176m-1.126-4.035a2 2 0 1 0-2.828-2.828a2 2 0 0 0 2.828 2.828"></path></svg>}
                 />
+                <Divider sx={{ my: 1 }} />
                 <Detail
                   text='Created At'
                   value={getTime("created_at" in s.coinex_position ? s.coinex_position.created_at : s.createdAt)}
@@ -147,11 +189,18 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   value={getTime("updated_at" in s.coinex_position ? s.coinex_position.updated_at : s.updatedAt)}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M17 17a5 5 0 1 0 0-10a5 5 0 0 0 0 10m.75-7a.75.75 0 0 0-1.5 0v1.846c0 .18.065.355.183.491l1 1.154a.75.75 0 0 0 1.134-.982l-.817-.943z"></path><path d="M1.25 7A.75.75 0 0 1 2 6.25h8a.75.75 0 0 1 0 1.5H2A.75.75 0 0 1 1.25 7m0 5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H2a.75.75 0 0 1-.75-.75m0 5a.75.75 0 0 1 .75-.75h8a.75.75 0 0 1 0 1.5H2a.75.75 0 0 1-.75-.75" opacity={0.5}></path></g></svg>}
                 />
+                <LastLogs
+                  logs={s.logs.map(x => x.message)}
+                  po={"ath_position_amount" in s.coinex_position}
+                  rle={!!relativeSL}
+                  tps={s.takeProfit.length}
+                  unp={"unrealized_pnl" in s.coinex_position}
+                />
               </Box>
             }
           </Stack>
         </Stack>
-        <Box sx={{ height: 70 }} />
+        <Box sx={{ height: 80 }} />
         <Box sx={{
           position: 'absolute',
           bottom: 0,
@@ -164,12 +213,7 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
             <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
               <TPChip signal={s} />
               <STChip signal={s} />
-            </Stack>
-
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant='caption' color="text.secondary">
-                {s.logs[s.logs.length - 1]?.message}
-              </Typography>
+              <Box sx={{ flex: '1 1 auto' }} />
               {s.state !== 'pending' && s.state !== 'cancelled' && s.state !== 'finished' && (
                 <Button
                   onClick={async () => {
@@ -197,4 +241,21 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
       <SignalLogsDialog open={open} onClose={() => setOpen(false)} logs={s.logs || []} />
     </Card>
   );
+}
+
+function LastLogs({ po, rle, tps, unp, logs }: { rle: boolean, tps: number, po: boolean, unp: boolean, logs: string[] }) {
+  const left = 2 + (rle ? 1 : 0) + tps + (po ? 2 : 0);
+  const right = 5 + (unp ? 1 : 0);
+
+  const max = left - right;
+
+  return useMemo(() =>
+    <Stack gap={2}>
+      {
+        logs
+          .slice(logs.length - max, logs.length)
+          .map(x => <Typography variant='caption'>{x}</Typography>)
+      }
+    </Stack>,
+    [max, logs.length])
 }
