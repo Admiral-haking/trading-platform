@@ -13,9 +13,9 @@ export function getPositionTradingData({ position, signal }: Props) {
 
     for (let index = 0; index < steps.length; index++) {
 
-        if (index === 0) continue;
+        if (index <= 1) continue;
 
-        const lastStep = steps[index - 1];
+        const lastStep = steps[index - 2];
         const step = steps[index];
         if (signal.position === 'LONG') {
 
