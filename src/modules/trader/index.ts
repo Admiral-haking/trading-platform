@@ -14,6 +14,7 @@ class TraderModule extends IntervalTrader {
         this.placeSignalInterval();
         this.checkOrdersInterval();
         this.checkPositionsInterval();
+        this.checkFinishedPositionsInterval()
 
         logger.info("Trader has been started!")
     }

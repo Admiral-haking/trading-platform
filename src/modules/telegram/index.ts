@@ -69,11 +69,15 @@ class TelegramService {
 
                 if (!exists) return;
 
+                logger.info(`ID: ${id} is exists, going to extract. messageId:${messageId} message: ${message}`);
+
+
                 LLM
                     .messageToJson()
                     .setMessage(message)
                     .onJson(signal => {
-                        const dialog = this.channels.find(x => x.id?.toString() === id);
+                        logger.info("signal income: ", signal)
+                        const dialog = this.channels.find(x => x.entity?.id.toString() === id);
                         Trader.incomeSignal({
                             ...signal,
                             messageId,
@@ -82,6 +86,9 @@ class TelegramService {
                                 message: `Initial Signal Income From ${dialog?.title || "Unknown"}`
                             }]
                         })
+                    })
+                    .onFail(reason => {
+                        logger.error(reason)
                     })
                     .think()
             },
@@ -106,6 +113,9 @@ class TelegramService {
                             }]
                         })
                     })
+                    .onFail(reason => {
+                        logger.error(reason)
+                    })
                     .think()
             },
             deleteSignal: ({ messageId }) => {
@@ -118,6 +128,9 @@ class TelegramService {
                     .onJson(({ order }) => {
                         if (order === "continue") return;
                         Trader.incomeExitSignal(messageId)
+                    })
+                    .onFail(reason => {
+                        logger.error(reason)
                     })
                     .think()
             }

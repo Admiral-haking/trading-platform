@@ -17,7 +17,7 @@ const port = env.port;
 const nextDir = path.resolve(process.cwd(), 'next');
 
 async function main() {
-  const nextApp = next({ dev, dir: nextDir });
+  const nextApp = next({ dev, dir: dev ? nextDir : undefined });
   const handle = nextApp.getRequestHandler();
 
   await nextApp.prepare();

@@ -214,5 +214,4 @@ export class LogicTrader extends TraderPosition {
         }
     }
 
-
 }

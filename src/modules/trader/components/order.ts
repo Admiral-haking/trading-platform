@@ -56,7 +56,7 @@ export class TraderOrder extends TraderWithdrawal {
             }
 
             await this.updateBalances();
-            if (this.featuresUSDTBalance <= notional.price) {
+            if ((this.featuresUSDTBalance * signal.leverage) <= notional.amount) {
                 return await logSignal(signal, "Place Order is Skipped. we don't have enough USDT!")
             }
             await logSignal(signal, "Placing Order (limit)...");
@@ -96,7 +96,7 @@ export class TraderOrder extends TraderWithdrawal {
         }
 
         await this.updateBalances();
-        if (this.featuresUSDTBalance <= notional.price) {
+        if ((this.featuresUSDTBalance * signal.leverage) <= notional.amount) {
             return await logSignal(signal, "Place Order is Skipped. we don't have enough USDT!")
         }
         await logSignal(signal, "Placing Order (market)...");

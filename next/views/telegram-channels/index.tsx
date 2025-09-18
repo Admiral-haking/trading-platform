@@ -29,28 +29,20 @@ export default function TelegramChannelsView() {
 
   const selectedIds = useMemo(() => channels.filter(c => c.selected).map(c => c.id), [channels.length]);
 
-  // Save on every change with a small debounce
-  useEffect(() => {
-    if (loading) return;
-    let t: any = null;
-    setSaving(true);
-    t = setTimeout(async () => {
-      try {
-        await api.post('/telegram/save', selectedIds);
-      } catch (e) {
-        // ignore; UI remains optimistic
-      } finally {
-        setSaving(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [selectedIds, loading]);
-
   const toggle = (id: string) => {
     setChannels((prev) => {
       const next = prev.map((c) => (c.id === id ? { ...c, selected: !c.selected } : c));
       // Re-sort with selected on top
-      next.sort((a, b) => Number(b.selected) - Number(a.selected));
+      (async () => {
+        try {
+          setSaving(true);
+          await api.post('/telegram/save', next.filter(x => x.selected).map(x => x.id));
+        } catch (e) {
+          // ignore; UI remains optimistic
+        } finally {
+          setSaving(false);
+        }
+      })()
       return [...next];
     });
   };

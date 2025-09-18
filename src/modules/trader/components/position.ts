@@ -120,7 +120,7 @@ export class TraderPosition extends TraderOrder {
                 }
             );
 
-            wait(.2);
+            await wait(.2);
         }
     }
 

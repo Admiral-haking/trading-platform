@@ -3,6 +3,7 @@ import { LogicTrader } from "./logic";
 let psi: any = null;
 let coi: any = null;
 let cpi: any = null;
+let cfpi: any = null;
 export class IntervalTrader extends LogicTrader {
 
 
@@ -39,4 +40,12 @@ export class IntervalTrader extends LogicTrader {
         }, 1e3 * 10);
     }
 
+
+    checkFinishedPositionsInterval() {
+        clearInterval(cfpi);
+        cfpi = setInterval(() => {
+            if (!this.isApiReady()) return;
+            this.updateFinishedPositions();
+        }, 1e3 * 60);
+    }
 }

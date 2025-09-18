@@ -2,6 +2,7 @@ import axios from "axios";
 import { ExtractPrompt } from "../constants/extract-prompt";
 import { LLMReturnType } from "./types";
 import { validateLLMOutput } from "../utils/zod";
+import { logger } from "../../../utils/logger";
 
 export function LLMMessageToJSON(apiKey: string) {
     let onJson: (res: LLMReturnType) => void;
@@ -22,7 +23,7 @@ export function LLMMessageToJSON(apiKey: string) {
             return returnObject;
         },
         think: () => {
-            if (!_message || _message.length <= 70) return;
+            if (!_message || _message.length <= 70) return onFail?.({ status: "short-length" });
             handle(_message, apiKey)
                 .then(res => {
                     if ("status" in res) return onFail?.(res);
@@ -43,7 +44,7 @@ export function LLMMessageToJSON(apiKey: string) {
 }
 
 
-async function handle(message: string, apiKey: string): Promise<LLMReturnType | { status: 'error' | 'warn' }> {
+async function handle(message: string, apiKey: string): Promise<LLMReturnType | { status: 'error' | 'warn' | 'short-length' }> {
     const DEEPSEEK_API_KEY = apiKey; // Replace with your actual API key
     const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'; // Verify correct endpoint
 
@@ -80,6 +81,7 @@ async function handle(message: string, apiKey: string): Promise<LLMReturnType | 
         return JSON.parse(modelResponse);
 
     } catch (error: any) {
+        logger.error(error)
         return { status: "error" }
     }
 }

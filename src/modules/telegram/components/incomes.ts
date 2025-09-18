@@ -11,7 +11,7 @@ export function telegramListenIncomes({ newSignal, deleteSignal, updateSignal, r
 
         if (event.className === "UpdateDeleteChannelMessages") {
             const deletedMessages = event.messages;
-            await wait(20)
+            await wait(20);
             return deletedMessages.forEach((messageId: any) => deleteSignal({ messageId }))
         }
 
@@ -22,7 +22,7 @@ export function telegramListenIncomes({ newSignal, deleteSignal, updateSignal, r
                 id,
                 messageId: event.message.id
             }
-            await wait(20)
+            await wait(20);
             updateSignal(update)
         }
 
