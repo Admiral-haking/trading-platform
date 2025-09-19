@@ -32,7 +32,6 @@ export default function SignalsView() {
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
 
-  const vapidPublicKey = (process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '').trim();
   const isProd = process.env.NODE_ENV === 'production';
   const load = async () => {
     try {
@@ -60,15 +59,17 @@ export default function SignalsView() {
     let cancelled = false;
 
     const enableAndSyncPush = async () => {
-      if (!vapidPublicKey) {
-        setPushError('Push notifications are not configured yet.');
-        setPushEnabled(false);
-        return;
-      }
-
       try {
         setPushLoading(true);
         setPushError(null);
+
+        const { data } = await api.get<{ publicKey: string | null }>('/notifications/public-key');
+        const vapidPublicKey = data?.publicKey?.trim();
+        if (!vapidPublicKey) {
+          setPushEnabled(false);
+          setPushError('Push notifications are not configured by the administrator.');
+          return;
+        }
 
         if (Notification.permission === 'denied') {
           setPushEnabled(false);
@@ -117,7 +118,7 @@ export default function SignalsView() {
     return () => {
       cancelled = true;
     };
-  }, [isProd, vapidPublicKey]);
+  }, [isProd]);
 
   const filtered = useMemo(() => {
     let s = signals;

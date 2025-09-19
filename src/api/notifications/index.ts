@@ -2,9 +2,15 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { PushSubscriptions } from '../../models/PushSubscription';
 import { logger } from '../../utils/logger';
+import { env } from '../../utils/env';
 import { sendTestNotification } from '../../modules/push/notifier';
 
 const notificationsRouter = Router();
+
+notificationsRouter.get('/notifications/public-key', authMiddleware, (req, res) => {
+  const publicKey = env.webPushPublicKey.trim();
+  res.json({ publicKey: publicKey || null });
+});
 
 notificationsRouter.post('/notifications/subscribe', authMiddleware, async (req, res, next) => {
   try {
