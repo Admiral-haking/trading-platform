@@ -8,6 +8,8 @@ import type { EventPayload } from '../../ws';
 const ICON_PATH = '/icons/icon-192x192.png';
 const BADGE_PATH = '/icons/icon-192x192.png';
 
+type LeanSubscription = PushSubscriptionAttrs & { _id: Types.ObjectId };
+
 const publicKey = env.webPushPublicKey.trim();
 const privateKey = env.webPushPrivateKey.trim();
 const vapidSubject = env.webPushSubject || 'mailto:admin@example.com';
@@ -117,27 +119,21 @@ function formatNotification(event: EventPayload): NotificationPayload | null {
   }
 }
 
-async function sendPush(event: EventPayload) {
-  if (!isConfigured) return;
-
-  const notification = formatNotification(event);
-  if (!notification) return;
-
-  const payload = JSON.stringify(notification);
-
-  const subscriptions = await PushSubscriptions.find();
-  if (!subscriptions?.length) return;
-
-  await Promise.all(subscriptions?.map(async (subscription) => {
+async function deliverToSubscriptions(subscriptions: LeanSubscription[], payload: string) {
+  const results = await Promise.all(subscriptions.map(async (subscription) => {
+    if (!subscription.keys?.p256dh || !subscription.keys?.auth) {
+      await PushSubscriptions.deleteOne({ _id: subscription._id });
+      return false;
+    }
     try {
-      if (subscription.keys)
-        await webPush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: subscription.keys,
-          },
-          payload
-        );
+      await webPush.sendNotification(
+        {
+          endpoint: subscription.endpoint,
+          keys: subscription.keys,
+        },
+        payload
+      );
+      return true;
     } catch (error: any) {
       const status = error?.statusCode;
       if (status === 404 || status === 410) {
@@ -148,8 +144,25 @@ async function sendPush(event: EventPayload) {
         status,
         error: error?.message ?? error,
       });
+      return false;
     }
   }));
+
+  return results.filter(Boolean).length;
+}
+
+async function sendPush(event: EventPayload) {
+  if (!isConfigured) return;
+
+  const notification = formatNotification(event);
+  if (!notification) return;
+
+  const payload = JSON.stringify(notification);
+
+  const subscriptions = await PushSubscriptions.find();
+  if (!subscriptions.length) return;
+
+  await deliverToSubscriptions(subscriptions, payload);
 }
 
 export function enqueuePushNotification(event: EventPayload) {
@@ -157,4 +170,27 @@ export function enqueuePushNotification(event: EventPayload) {
   void sendPush(event).catch((error) => {
     logger.error('Unexpected push notification error', { error });
   });
+}
+
+export async function sendTestNotification(userId: Types.ObjectId) {
+  if (!isConfigured) {
+    throw new Error('Web push notifications are not configured.');
+  }
+
+  const subscriptions = await PushSubscriptions.find({ user: userId });
+  if (!subscriptions.length) {
+    return { delivered: 0, total: 0 };
+  }
+
+  const payload = JSON.stringify({
+    title: 'Notifications Enabled',
+    body: 'Push notifications are working on this device.',
+    icon: ICON_PATH,
+    badge: BADGE_PATH,
+    data: { url: '/signals', type: 'notification:test' },
+    tag: 'notification-test',
+  });
+
+  const delivered = await deliverToSubscriptions(subscriptions, payload);
+  return { delivered, total: subscriptions.length };
 }
