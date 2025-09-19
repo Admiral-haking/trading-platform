@@ -60,7 +60,7 @@ export class TraderBalance {
                 if (!c.coinex_position || !("avg_entry_price" in c.coinex_position) || !("ath_position_amount" in c.coinex_position)) return t;
                 const price = Number(c.coinex_position.avg_entry_price || "0") || 0;
                 const amount = Number(c.coinex_position.ath_position_amount || "0") || 0
-                return t + (amount * price)
+                return t + ((amount * price) / c.leverage)
             }, 0)
             // As you intended: total USDT on the account (available + frozen)
             this.fullFeatureBalance = this.featuresUSDTBalance + this.featuresUSDTFrozenBalance + sum + unrealized_pnl;
