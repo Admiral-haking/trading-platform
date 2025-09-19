@@ -4,6 +4,7 @@ import { telegramRouter } from './telegram';
 import { coinexRouter } from './coinex';
 import { incomeRouter } from './income';
 import { FollowersRouter } from './followers';
+import { notificationsRouter } from './notifications';
 
 const router = Router();
 
@@ -16,5 +17,5 @@ router.use(telegramRouter)
 router.use(coinexRouter)
 router.use(incomeRouter)
 router.use(FollowersRouter)
+router.use(notificationsRouter)
 export default router;
-

@@ -13,6 +13,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   Typography,
@@ -89,8 +90,8 @@ export default function FollowersView() {
         </Typography>
       </Box>
 
-      <Card>
-        <CardActions sx={{ justifyContent: 'flex-end', px: 2, pt: 2 }}>
+      <Card sx={{ maxWidth: '95vw' }}>
+        <CardActions sx={{ justifyContent: 'flex-end', pt: 2 }}>
           <Button variant="contained" onClick={openCreate}>Add Follower</Button>
         </CardActions>
         <CardContent>
@@ -99,33 +100,35 @@ export default function FollowersView() {
           ) : error ? (
             <Typography color="error" variant="body2">{error}</Typography>
           ) : (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Base URL</TableCell>
-                  <TableCell>Expire (s)</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r._id} hover>
-                    <TableCell>{r.name}</TableCell>
-                    <TableCell>{r.baseUrl}</TableCell>
-                    <TableCell>{r.expire}</TableCell>
-                    <TableCell align="right">
-                      <IconButton color="primary" size="small" onClick={() => openEdit(r)}>
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton color="error" size="small" onClick={() => remove(r._id)}>
-                        <DeleteOutlineOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
+            <TableContainer sx={{ maxWidth: '95vw', overflowX: 'scroll' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Base URL</TableCell>
+                    <TableCell>Expire (s)</TableCell>
+                    <TableCell align="right">Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {rows.map((r) => (
+                    <TableRow key={r._id} hover>
+                      <TableCell>{r.name}</TableCell>
+                      <TableCell>{r.baseUrl}</TableCell>
+                      <TableCell>{r.expire}</TableCell>
+                      <TableCell align="right">
+                        <IconButton color="primary" size="small" onClick={() => openEdit(r)}>
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton color="error" size="small" onClick={() => remove(r._id)}>
+                          <DeleteOutlineOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </CardContent>
       </Card>

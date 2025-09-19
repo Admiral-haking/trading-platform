@@ -41,7 +41,7 @@ export default function AssetsTable({ data }: Props) {
   const totalValue = rows.reduce((s, r) => s + r.value, 0);
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ maxWidth: '95vw', overflowX: 'scroll' }}>
       <Table size="small" stickyHeader>
         <TableHead>
           <TableRow>

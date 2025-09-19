@@ -5,7 +5,7 @@ import AboutUs from './components/AboutUs';
 
 export default function AboutView() {
   return (
-    <Stack spacing={6} sx={{ py: 6, alignItems: 'center' }}>
+    <Stack gap={6} sx={{ py: 6, alignItems: 'center' }}>
       <Box sx={{ textAlign: 'center', width: '100%' }}>
         <Typography variant="overline" color="primary" sx={{ letterSpacing: 3 }}>INFORMATION</Typography>
         <Typography variant="h3" sx={{ mt: 1, fontWeight: 800 }}>About Me</Typography>
@@ -13,7 +13,7 @@ export default function AboutView() {
           Project details, credits, and contact information.
         </Typography>
       </Box>
-      <Grid container spacing={3} sx={{ width: '100%', maxWidth: 900 }}>
+      <Grid container sx={{ width: '100%', maxWidth: 900 }}>
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>

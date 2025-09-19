@@ -7,7 +7,7 @@ export default function Meta({ title, description }: { title: string; descriptio
     <Head>
       <title>{fullTitle}</title>
       {description ? <meta name="description" content={description} /> : null}
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     </Head>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography } from '@mui/material';
 import api from '../../utils/axios';
 import type { CoinexFullResponse } from '../../types/coinex';
 import SummaryCards from './components/SummaryCards';
@@ -38,26 +38,28 @@ export default function DashboardView() {
   if (!data) return null;
 
   return (
-    <Stack spacing={6} sx={{ py: 2 }}>
+    <Stack gap={6} sx={{ py: 2 }}>
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="overline" color="primary" sx={{ letterSpacing: 3 }}>DASHBOARD</Typography>
         <Typography variant="h3" sx={{ mt: 1, fontWeight: 800 }}>Overview</Typography>
         {error && <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>}
       </Box>
 
-      <SummaryCards
-        spotAvailableUSDT={data.spotAvailableUSDT}
-        spotFrozenUSDT={data.spotFrozenUSDT}
-        featuresAvailableUSDT={data.featuresAvailableUSDT}
-        featuresFrozenUSDT={data.featuresFrozenUSDT}
-      />
+      <Container maxWidth="lg">
+        <SummaryCards
+          spotAvailableUSDT={data.spotAvailableUSDT}
+          spotFrozenUSDT={data.spotFrozenUSDT}
+          featuresAvailableUSDT={data.featuresAvailableUSDT}
+          featuresFrozenUSDT={data.featuresFrozenUSDT}
+        />
+      </Container>
 
-      <Stack spacing={2}>
+      <Stack gap={2}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>Spot Assets (USDT Value)</Typography>
         <AssetsTable data={data} />
       </Stack>
 
-      <Stack spacing={2}>
+      <Stack gap={2}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>Signals</Typography>
         <SignalsByState signals={data.signals} markets={data.markets} />
       </Stack>

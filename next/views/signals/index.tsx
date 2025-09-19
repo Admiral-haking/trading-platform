@@ -1,11 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch } from '@mui/material';
+import { Alert, Box, Button, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch } from '@mui/material';
 import api from '../../utils/axios';
 import type { CoinexFullResponse, Markets, Signal, SignalState } from '../../types/coinex';
 import SignalCard from './components/SignalCard';
 import useInterval from '../../hooks/useInterval';
 
 const allStates: SignalState[] = ['pending', 'order placed', 'filled', 'cancelled', 'finished'];
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = typeof window === 'undefined' ? '' : window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export default function SignalsView() {
   const [signals, setSignals] = useState<Signal[]>([]);
@@ -16,6 +27,16 @@ export default function SignalsView() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [ignored, setIgnored] = useState(true);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
+
+  const vapidPublicKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
+  const isProd = process.env.NODE_ENV === 'production';
+  const notificationPermission = typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default';
+  const permissionBlocked = pushSupported && notificationPermission === 'denied';
+
   const load = async () => {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
@@ -29,6 +50,79 @@ export default function SignalsView() {
 
   useEffect(() => { load(); }, []);
   useInterval(load, 2000);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const supported = isProd && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    setPushSupported(supported);
+    if (!supported) return;
+
+    let cancelled = false;
+
+    const syncSubscription = async () => {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (cancelled) return;
+
+        if (subscription) {
+          setPushEnabled(Notification.permission === 'granted');
+          if (Notification.permission === 'granted') {
+            await api.post('/notifications/subscribe', { subscription });
+          }
+        } else {
+          setPushEnabled(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('Unable to sync push subscription', err);
+        }
+      }
+    };
+
+    syncSubscription();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isProd]);
+
+  const enablePushNotifications = async () => {
+    if (!pushSupported) {
+      setPushError('Notifications are not supported on this device.');
+      return;
+    }
+    if (!vapidPublicKey) {
+      setPushError('Push notifications are not configured.');
+      return;
+    }
+
+    try {
+      setPushLoading(true);
+      setPushError(null);
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setPushError('Notifications permission was not granted.');
+        return;
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        });
+      }
+
+      await api.post('/notifications/subscribe', { subscription });
+      setPushEnabled(true);
+    } catch (err: any) {
+      setPushError(err?.message ?? 'Failed to enable notifications.');
+    } finally {
+      setPushLoading(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     let s = signals;
@@ -65,11 +159,46 @@ export default function SignalsView() {
           control={<Switch checked={ignored} onChange={(e, v) => setIgnored(v)} />}
           label="Ignore Cancelled"
         />
+        {pushSupported ? (
+          pushEnabled ? (
+            <Chip label="Notifications enabled" color="primary" variant="outlined" size="small" sx={{ mt: 1 }} />
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                size="small"
+                sx={{ mt: 1 }}
+                onClick={enablePushNotifications}
+                disabled={pushLoading || !vapidPublicKey || permissionBlocked}
+              >
+                {pushLoading ? 'Enabling…' : 'Enable Notifications'}
+              </Button>
+              {permissionBlocked && (
+                <Typography variant="caption" sx={{ mt: 0.5, display: 'block', opacity: 0.8 }}>
+                  Notifications are blocked in your browser settings. Enable them to receive alerts.
+                </Typography>
+              )}
+              {!vapidPublicKey && (
+                <Typography variant="caption" sx={{ mt: 0.5, display: 'block', opacity: 0.8 }}>
+                  Admin setup required: missing public push key.
+                </Typography>
+              )}
+            </>
+          )
+        ) : (
+          <Typography variant="caption" sx={{ mt: 1, opacity: 0.7 }}>
+            Install the production build on a supported browser to receive push notifications.
+          </Typography>
+        )}
       </Box>
+
+      {pushError && (
+        <Alert severity="error" onClose={() => setPushError(null)}>{pushError}</Alert>
+      )}
 
       <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between">
-          <ToggleButtonGroup value={filter} exclusive onChange={(_, v) => v && setFilter(v)} size="small">
+          <ToggleButtonGroup value={filter} exclusive onChange={(_, v) => v && setFilter(v)} size="small" sx={{ display: { xs: 'block', md: 'inline-flex' } }}>
             <ToggleButton value="all">All <Chip label={counts.all} size="small" sx={{ ml: 1 }} /></ToggleButton>
             {allStates.map((st) => (
               <ToggleButton key={st} value={st}>
@@ -77,7 +206,7 @@ export default function SignalsView() {
               </ToggleButton>
             ))}
           </ToggleButtonGroup>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
             <TextField placeholder="Search market or messageId" value={q} onChange={(e) => setQ(e.target.value)} size="small" sx={{ minWidth: 260 }} />
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="page-size-label">Per page</InputLabel>
@@ -95,9 +224,9 @@ export default function SignalsView() {
         </Stack>
       </Paper>
 
-      <Grid container spacing={2}>
+      <Grid container>
         {paged.map((s) => (
-          <Grid key={`${s.messageId}-${s.state}`} item xs={12} md={6}>
+          <Grid key={`${s.messageId}-${s.state}`} item xs={12} md={6} sx={{ p: 1 }}>
             <SignalCard s={s} markets={markets} />
           </Grid>
         ))}

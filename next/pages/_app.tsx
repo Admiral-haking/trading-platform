@@ -20,6 +20,25 @@ function ThemeRoot({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ Component, pageProps }: AppProps) {
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      return;
+    }
+
+    if ('serviceWorker' in navigator) {
+      const register = () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .catch((error) => {
+            console.error('Service worker registration failed:', error);
+          });
+      };
+
+      window.addEventListener('load', register);
+      return () => window.removeEventListener('load', register);
+    }
+  }, []);
+
   return (
     <ColorModeProvider>
       <ThemeRoot>

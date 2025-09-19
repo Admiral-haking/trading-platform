@@ -62,7 +62,7 @@ export default function DepositView() {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ maxWidth: '90vw', overflowX: 'scroll' }}>
         <Grid item xs={12} md={5}>
           <Stack spacing={2}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Asset</Typography>

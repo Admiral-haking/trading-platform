@@ -1,8 +1,9 @@
 import type { Server } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { logger } from './utils/logger';
+import { enqueuePushNotification } from './modules/push/notifier';
 
-type EventPayload = { type: string; payload?: any };
+export type EventPayload = { type: string; payload?: any };
 
 let wss: WebSocketServer | null = null;
 
@@ -44,5 +45,5 @@ export function broadcast(event: EventPayload) {
       try { ws.send(msg); } catch {}
     }
   });
+  enqueuePushNotification(event);
 }
-

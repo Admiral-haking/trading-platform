@@ -15,6 +15,7 @@ export const authMiddleware: Handler = async (req, res, next) => {
 
         if (!user) return res.status(403).send();
 
+        req.user = user;
         next();
     }
     catch (err) {

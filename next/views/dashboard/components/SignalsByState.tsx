@@ -24,10 +24,10 @@ export default function SignalsByState({ signals, markets }: Props) {
   }, [signals]);
 
   return (
-    <Stack spacing={3}>
+    <Stack gap={3}>
       {states.map((st) => (
-        <Stack key={st} spacing={1.5}>
-          <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack key={st} gap={1.5}>
+          <Stack direction="row" alignItems="center" gap={1}>
             <Typography variant="h6" sx={{ fontWeight: 700, textTransform: 'capitalize' }}>{st}</Typography>
             <Chip label={(grouped[st] || []).length} size="small" />
           </Stack>
