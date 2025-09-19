@@ -1,3 +1,4 @@
+import { Signals } from "../../../models/Signal";
 import { DynamicConfigs } from "../../../utils/config";
 import { logger } from "../../../utils/logger";
 import { Coinex } from "../../coinex";
@@ -44,13 +45,26 @@ export class TraderBalance {
             this.spotUSDTFrozenBalance = Number(spotUsdt?.frozen ?? 0) || 0;
 
             const { data: features } = await Coinex.features_balance();
+
+
             const featuresUsdt = (Array.isArray(features) ? features : []).find(x => x?.ccy === "USDT");
+
 
             this.featuresUSDTBalance = Number(featuresUsdt?.available ?? 0) || 0;
             this.featuresUSDTFrozenBalance = Number(featuresUsdt?.frozen ?? 0) || 0;
+            const unrealized_pnl = Number(featuresUsdt?.unrealized_pnl ?? 0) || 0;
 
+            const signals = await Signals.find({ state: 'filled' });
+
+            const sum = signals.reduce((t, c) => {
+                if (!c.coinex_position || !("avg_entry_price" in c.coinex_position) || !("ath_position_amount" in c.coinex_position)) return t;
+                const price = Number(c.coinex_position.avg_entry_price || "0") || 0;
+                const amount = Number(c.coinex_position.ath_position_amount || "0") || 0
+                return t + (amount * price)
+            }, 0)
             // As you intended: total USDT on the account (available + frozen)
-            this.fullFeatureBalance = this.featuresUSDTBalance + this.featuresUSDTFrozenBalance;
+            this.fullFeatureBalance = this.featuresUSDTBalance + this.featuresUSDTFrozenBalance + sum + unrealized_pnl;
+
 
             // Read, sanitize, and clamp percentages
             const wcp = clampPercent(DynamicConfigs.get("workingCapitalPercentage"), 50); // e.g., 80
