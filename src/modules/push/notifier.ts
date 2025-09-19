@@ -125,18 +125,19 @@ async function sendPush(event: EventPayload) {
 
   const payload = JSON.stringify(notification);
 
-  const subscriptions = await PushSubscriptions.find().lean<PushSubscriptionAttrs & { _id: Types.ObjectId }>();
-  if (!subscriptions.length) return;
+  const subscriptions = await PushSubscriptions.find();
+  if (!subscriptions?.length) return;
 
-  await Promise.all(subscriptions.map(async (subscription) => {
+  await Promise.all(subscriptions?.map(async (subscription) => {
     try {
-      await webPush.sendNotification(
-        {
-          endpoint: subscription.endpoint,
-          keys: subscription.keys,
-        },
-        payload
-      );
+      if (subscription.keys)
+        await webPush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: subscription.keys,
+          },
+          payload
+        );
     } catch (error: any) {
       const status = error?.statusCode;
       if (status === 404 || status === 410) {
