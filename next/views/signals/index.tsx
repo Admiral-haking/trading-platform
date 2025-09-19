@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Chip, Grid, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, Pagination, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch } from '@mui/material';
 import api from '../../utils/axios';
 import type { CoinexFullResponse, Markets, Signal, SignalState } from '../../types/coinex';
 import SignalCard from './components/SignalCard';
@@ -15,6 +15,7 @@ export default function SignalsView() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
+  const [ignored, setIgnored] = useState(true);
   const load = async () => {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
@@ -31,13 +32,14 @@ export default function SignalsView() {
 
   const filtered = useMemo(() => {
     let s = signals;
+    if (ignored) s = s.filter(x => x.state !== 'cancelled')
     if (filter !== 'all') s = s.filter((x) => x.state === filter);
     if (q) {
       const qq = q.toLowerCase();
       s = s.filter((x) => x.market.toLowerCase().includes(qq) || String(x.messageId).includes(qq));
     }
     return s;
-  }, [signals, filter, q]);
+  }, [signals, filter, q, ignored]);
 
   // Reset to page 1 when filters/search change
   useEffect(() => { setPage(1); }, [filter, q]);
@@ -59,6 +61,10 @@ export default function SignalsView() {
       <Box>
         <Typography variant="overline" color="primary" sx={{ letterSpacing: 3 }}>SIGNALS</Typography>
         <Typography variant="h4" sx={{ mt: 1, fontWeight: 800 }}>Live Signals</Typography>
+        <FormControlLabel
+          control={<Switch checked={ignored} onChange={(e, v) => setIgnored(v)} />}
+          label="Ignore Cancelled"
+        />
       </Box>
 
       <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>

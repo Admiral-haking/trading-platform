@@ -122,16 +122,12 @@ export class TraderOrder extends TraderWithdrawal {
     async getOrderStatus(signal: Signal) {
         if (!signal.orderId) return;
 
-        await logSignal(signal, "Getting Order Status...");
-
         const { data } = await Coinex.get_order_status({ market: signal.market, order_id: signal.orderId });
 
         signal.realized_pnl = Number(data.realized_pnl || "0");
 
         signal.state = orderStateToSignalState(data.status);
 
-
-        await logSignal(signal, "Order Status Updated!");
         try {
             const { data: positions } = await Coinex.get_pending_positions({ market_type: "FUTURES", market: signal.market });
             const position = positions.find(x => x.market === signal.market && x.side === signal.position.toLowerCase());

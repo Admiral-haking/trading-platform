@@ -13,6 +13,10 @@ import Detail from './detail';
 import { green } from '@mui/material/colors';
 import { getTime } from '../utils/time';
 import TradeProgressBar from './progress';
+import bullish from "../assets/bullish.jpg";
+import bearish from "../assets/bearish.jpg";
+import Log from './log';
+
 
 function fmt(n: number) {
   const d = Math.abs(n) < 1 ? 4 : 2;
@@ -55,7 +59,16 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
   const relativeSL = getRelativeSL();
 
   const lastPrice = Number(markets[s.market]?.last || 0)
-  const marketPrice = Number(markets[s.market]?.mark_price || 0)
+  const marketPrice = Number(markets[s.market]?.mark_price || 0);
+
+
+  const myEntry = s.coinex_position ? Number("avg_entry_price" in s.coinex_position ? s.coinex_position.avg_entry_price : s.entry) : s.entry;
+  const myAmount = s.coinex_position ? Number("ath_position_amount" in s.coinex_position ? s.coinex_position.ath_position_amount : 0) : 0;
+  const fullValue = myAmount * myEntry;
+  const myValue = fullValue / s.leverage;
+  const stVal = (myAmount * (s.coinex_position && "stop_loss_price" in s.coinex_position ? parseFloat(s.coinex_position.stop_loss_price) || s.stopLoss : s.stopLoss))
+  const stValue = s.position === 'LONG' ? fullValue - stVal : stVal - fullValue;
+  const tpValues = s.takeProfit.map(x => s.position === 'LONG' ? (x * myAmount) - fullValue : fullValue - (x * myAmount));
 
   return (
     <Card variant="outlined" sx={{
@@ -150,6 +163,51 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   }
                 </>
               }
+
+
+              <Divider sx={{ my: 1 }} />
+              <Detail
+                text='Full Value'
+                color="primary.main"
+                value={fmt(fullValue).concat(" USDT")}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M12 3c-2.31 0-3.77 2.587-6.688 7.762l-.364.644c-2.425 4.3-3.638 6.45-2.542 8.022S6.214 21 11.636 21h.728c5.422 0 8.134 0 9.23-1.572s-.117-3.722-2.542-8.022l-.364-.645C15.77 5.587 14.311 3 12 3" opacity={0.5}></path><path fill="currentColor" d="M12 7.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2"></path></svg>}
+              />
+              <Detail
+                text='My Share'
+                color="primary.main"
+                value={fmt(myValue).concat(" USDT")}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M12 3c-2.31 0-3.77 2.587-6.688 7.762l-.364.644c-2.425 4.3-3.638 6.45-2.542 8.022S6.214 21 11.636 21h.728c5.422 0 8.134 0 9.23-1.572s-.117-3.722-2.542-8.022l-.364-.645C15.77 5.587 14.311 3 12 3" opacity={0.5}></path><path fill="currentColor" d="M12 7.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2"></path></svg>}
+              />
+              <Detail
+                text='Stop Loss Value'
+                color={!relativeSL ? "error.main" : "warning.secondary"}
+                value={fmt(stValue).concat(" USDT")}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M12 3c-2.31 0-3.77 2.587-6.688 7.762l-.364.644c-2.425 4.3-3.638 6.45-2.542 8.022S6.214 21 11.636 21h.728c5.422 0 8.134 0 9.23-1.572s-.117-3.722-2.542-8.022l-.364-.645C15.77 5.587 14.311 3 12 3" opacity={0.5}></path><path fill="currentColor" d="M12 7.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2"></path></svg>}
+              />
+              <Detail
+                text='After ST Value'
+                color={!relativeSL ? "error.main" : "warning.secondary"}
+                value={fmt(myValue - stValue).concat(" USDT")}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="currentColor" d="M12 3c-2.31 0-3.77 2.587-6.688 7.762l-.364.644c-2.425 4.3-3.638 6.45-2.542 8.022S6.214 21 11.636 21h.728c5.422 0 8.134 0 9.23-1.572s-.117-3.722-2.542-8.022l-.364-.645C15.77 5.587 14.311 3 12 3" opacity={0.5}></path><path fill="currentColor" d="M12 7.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V8a.75.75 0 0 1 .75-.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2"></path></svg>}
+              />
+              {
+                tpValues.map((x, i) => <Detail
+                  text={`TP${i + 1} Value`}
+                  value={fmt(x).concat(" USDT")}
+                  key={x}
+                  color={(green as any)[((i + 2) * 100)] || "success.main"}
+                  icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10" opacity={0.5}></path><path d="M12 5.25a.75.75 0 0 1 .75.75v.317c1.63.292 3 1.517 3 3.183a.75.75 0 0 1-1.5 0c0-.678-.564-1.397-1.5-1.653v3.47c1.63.292 3 1.517 3 3.183s-1.37 2.891-3 3.183V18a.75.75 0 0 1-1.5 0v-.317c-1.63-.292-3-1.517-3-3.183a.75.75 0 0 1 1.5 0c0 .678.564 1.397 1.5 1.652v-3.469c-1.63-.292-3-1.517-3-3.183s1.37-2.891 3-3.183V6a.75.75 0 0 1 .75-.75m-.75 2.597c-.936.256-1.5.975-1.5 1.653s.564 1.397 1.5 1.652zm3 6.653c0-.678-.564-1.397-1.5-1.652v3.304c.936-.255 1.5-.974 1.5-1.652"></path></g></svg>}
+                />)
+              }
+              {
+                tpValues.map((x, i) => <Detail
+                  text={`After TP${i + 1} Value`}
+                  value={fmt(myValue + x).concat(" USDT")}
+                  key={x}
+                  color={(green as any)[((i + 2) * 100)] || "success.main"}
+                  icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10" opacity={0.5}></path><path d="M12 5.25a.75.75 0 0 1 .75.75v.317c1.63.292 3 1.517 3 3.183a.75.75 0 0 1-1.5 0c0-.678-.564-1.397-1.5-1.653v3.47c1.63.292 3 1.517 3 3.183s-1.37 2.891-3 3.183V18a.75.75 0 0 1-1.5 0v-.317c-1.63-.292-3-1.517-3-3.183a.75.75 0 0 1 1.5 0c0 .678.564 1.397 1.5 1.652v-3.469c-1.63-.292-3-1.517-3-3.183s1.37-2.891 3-3.183V6a.75.75 0 0 1 .75-.75m-.75 2.597c-.936.256-1.5.975-1.5 1.653s.564 1.397 1.5 1.652zm3 6.653c0-.678-.564-1.397-1.5-1.652v3.304c.936-.255 1.5-.974 1.5-1.652"></path></g></svg>}
+                />)
+              }
             </Box>
             {
               !!s.coinex_position && <Box sx={{ width: '48%' }}>
@@ -189,8 +247,9 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
                   value={getTime("updated_at" in s.coinex_position ? s.coinex_position.updated_at : s.updatedAt)}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><g fill="currentColor" fillRule="evenodd" clipRule="evenodd"><path d="M17 17a5 5 0 1 0 0-10a5 5 0 0 0 0 10m.75-7a.75.75 0 0 0-1.5 0v1.846c0 .18.065.355.183.491l1 1.154a.75.75 0 0 0 1.134-.982l-.817-.943z"></path><path d="M1.25 7A.75.75 0 0 1 2 6.25h8a.75.75 0 0 1 0 1.5H2A.75.75 0 0 1 1.25 7m0 5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H2a.75.75 0 0 1-.75-.75m0 5a.75.75 0 0 1 .75-.75h8a.75.75 0 0 1 0 1.5H2a.75.75 0 0 1-.75-.75" opacity={0.5}></path></g></svg>}
                 />
+                <Divider sx={{ my: 1 }} />
                 <LastLogs
-                  logs={s.logs.map(x => x.message)}
+                  logs={s.logs}
                   po={"ath_position_amount" in s.coinex_position}
                   rle={!!relativeSL}
                   tps={s.takeProfit.length}
@@ -238,24 +297,40 @@ export default function SignalCard({ s, markets }: { s: Signal, markets: Markets
           </CardContent>
         </Box>
       </CardContent>
+      <Box
+        sx={{
+          backgroundImage: `url(${s.position === 'LONG' ? bullish.src : bearish.src})`,
+          backgroundSize: 'cover',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: -1,
+          mixBlendMode: 'overlay',
+          filter: 'brightness(150%)'
+        }}
+      />
       <SignalLogsDialog open={open} onClose={() => setOpen(false)} logs={s.logs || []} />
     </Card>
   );
 }
 
-function LastLogs({ po, rle, tps, unp, logs }: { rle: boolean, tps: number, po: boolean, unp: boolean, logs: string[] }) {
-  const left = 2 + (rle ? 1 : 0) + tps + (po ? 2 : 0);
+function LastLogs({ po, rle, tps, unp, logs }: { rle: boolean, tps: number, po: boolean, unp: boolean, logs: { timestamp: number, message: string }[] }) {
+  const left = 2 + (rle ? 1 : 0) + (tps * 3) + (po ? 2 : 0);
   const right = 5 + (unp ? 1 : 0);
 
   const max = left - right;
 
+  const filtered = logs
+    .filter(x => x.message !== 'updating position details done!')
   return useMemo(() =>
     <Stack gap={2}>
       {
-        logs
-          .slice(logs.length - max, logs.length)
-          .map(x => <Typography variant='caption'>{x}</Typography>)
+        filtered
+          .slice(filtered.length - max, filtered.length)
+          .map(x => <Log  {...x} key={x.timestamp} />)
       }
     </Stack>,
-    [max, logs.length])
+    [max, filtered.length])
 }
