@@ -32,7 +32,6 @@ export default function SignalsView() {
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
 
-  const isProd = process.env.NODE_ENV === 'production';
   const load = async () => {
     try {
       const res = await api.get<CoinexFullResponse>('/coinex/full');
@@ -49,10 +48,25 @@ export default function SignalsView() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const supported = isProd && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-    setPushSupported(supported);
-    if (!supported) {
+    const notificationsSupported = 'Notification' in window;
+    setPushSupported(notificationsSupported);
+    if (!notificationsSupported) {
       setPushEnabled(false);
+      setPushError('This browser does not support notifications.');
+      return;
+    }
+
+    const isSecureContext = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushEnabled(false);
+      setPushError('Push notifications require Service Worker support in this browser.');
+      return;
+    }
+
+    if (!isSecureContext) {
+      setPushEnabled(false);
+      setPushError('Push notifications need HTTPS or localhost to operate.');
       return;
     }
 
@@ -63,27 +77,22 @@ export default function SignalsView() {
         setPushLoading(true);
         setPushError(null);
 
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+
+        if (Notification.permission !== 'granted') {
+          setPushEnabled(false);
+          setPushError('Notifications permission was not granted.');
+          return;
+        }
+
         const { data } = await api.get<{ publicKey: string | null }>('/notifications/public-key');
         const vapidPublicKey = data?.publicKey?.trim();
         if (!vapidPublicKey) {
           setPushEnabled(false);
           setPushError('Push notifications are not configured by the administrator.');
           return;
-        }
-
-        if (Notification.permission === 'denied') {
-          setPushEnabled(false);
-          setPushError('Notifications are blocked in browser settings. Enable them to receive alerts.');
-          return;
-        }
-
-        if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            setPushEnabled(false);
-            setPushError('Notifications permission was not granted.');
-            return;
-          }
         }
 
         const registration = await navigator.serviceWorker.ready;
@@ -118,7 +127,7 @@ export default function SignalsView() {
     return () => {
       cancelled = true;
     };
-  }, [isProd]);
+  }, []);
 
   const filtered = useMemo(() => {
     let s = signals;

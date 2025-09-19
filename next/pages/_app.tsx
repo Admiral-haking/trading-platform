@@ -21,22 +21,25 @@ function ThemeRoot({ children }: { children: React.ReactNode }) {
 
 export default function App({ Component, pageProps }: AppProps) {
   React.useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!('serviceWorker' in navigator)) {
       return;
     }
 
-    if ('serviceWorker' in navigator) {
-      const register = () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .catch((error) => {
-            console.error('Service worker registration failed:', error);
-          });
-      };
-
-      window.addEventListener('load', register);
-      return () => window.removeEventListener('load', register);
+    const isSecureContext = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    if (!isSecureContext) {
+      return;
     }
+
+    const register = () => {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .catch((error) => {
+          console.error('Service worker registration failed:', error);
+        });
+    };
+
+    window.addEventListener('load', register);
+    return () => window.removeEventListener('load', register);
   }, []);
 
   return (
