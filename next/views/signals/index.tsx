@@ -32,7 +32,7 @@ export default function SignalsView() {
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
 
-  const vapidPublicKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
+  const vapidPublicKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? 'BKSBAVcKgkdkdA95I4W6paxO-bBu4G5ts-1XDdjw99sz5KiypUEHY7Iib9wEN-NL5aHlnA33qOMBpgBVA64qLOA';
   const isProd = process.env.NODE_ENV === 'production';
   const notificationPermission = typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default';
   const permissionBlocked = pushSupported && notificationPermission === 'denied';
