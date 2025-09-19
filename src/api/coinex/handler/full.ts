@@ -8,7 +8,7 @@ export const coinexFullDataHandler: Handler = async (req, res, next) => {
             assets: Trader.spotAssets,
             spotAvailableUSDT: Trader.spotUSDTBalance,
             spotFrozenUSDT: Trader.spotUSDTFrozenBalance,
-            featuresAvailableUSDT: Trader.featuresUSDTBalance,
+            featuresAvailableUSDT: Trader.fullFeatureBalance,
             featuresFrozenUSDT: Trader.featuresUSDTFrozenBalance,
             markets: Market.markets,
             signals: await Signals.find({}, null, { sort: { _id: -1 } })
