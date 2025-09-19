@@ -16,6 +16,7 @@ export function getPositionTradingData({ position, signal }: Props) {
         if (index <= 1) continue;
 
         const lastStep = steps[index - 2];
+        const middleStep = steps[index - 1];
         const step = steps[index];
         if (signal.position === 'LONG') {
 
@@ -23,14 +24,14 @@ export function getPositionTradingData({ position, signal }: Props) {
 
             const pst = Number(position.stop_loss_price);
 
-            if (pst < lastStep) return { stopLoss: fivePercentBetween(lastStep, step) };
+            if (pst < lastStep) return { stopLoss: xPercentBetween(lastStep, middleStep) };
         } else {
 
             if (price > step) break;
 
             const pst = Number(position.stop_loss_price);
 
-            if (pst > lastStep) return { stopLoss: fivePercentBetween(lastStep, step) };
+            if (pst > lastStep) return { stopLoss: xPercentBetween(lastStep, middleStep) };
         }
     }
 
@@ -38,10 +39,10 @@ export function getPositionTradingData({ position, signal }: Props) {
 
 }
 
-function fivePercentBetween(entry: number, tp1: number): number {
-    const diff = tp1 - entry;         // distance between entry and tp1
-    const fivePercent = diff * 0.05;  // 5% of that distance
-    return entry + fivePercent;       // 5% closer to tp1 from entry
+function xPercentBetween(entry: number, tp1: number): number {
+    const diff = tp1 - entry;
+    const fivePercent = diff * 0.02;
+    return entry + fivePercent;
 }
 
 type TPStrategy = "fast-tp" | "risk-free"
