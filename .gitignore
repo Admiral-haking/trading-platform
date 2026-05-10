@@ -1,29 +1,46 @@
 # Dependencies
 node_modules/
 
-# Builds
+# Build outputs
 build/
 .next/
 next/.next/
+dist/
 
-# Env
+# Environment files
 .env
 .env.local
+.env.production
+.env.development
 .env.*.local
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Editor
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
 
+# Secrets & Keys
 private.key
 ai-front.txt
+*.pem
+*.key
+cert/
+certs/
 
+# Deploy artifacts
 deploy.zip
 deploy.sh
+
+# Runtime
+.session.lock
+*.tsbuildinfo
