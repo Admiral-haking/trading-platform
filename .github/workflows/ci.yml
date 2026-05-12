@@ -1,79 +1,25 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  quality:
-    name: Code Quality
+  test:
+    name: Lint & Test
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18, 20]
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "20"
           cache: 'npm'
-
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
-
-      - name: TypeScript Type Check
+      - name: Run tests
+        run: npm test
+      - name: Type check
         run: npx tsc --noEmit
-
-      - name: Build Project
-        run: npm run build
-
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: npm Audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
-
-  # Uncomment and configure for auto-deployment:
-  # deploy:
-  #   name: Deploy to Production
-  #   needs: [quality, security]
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Deploy via SSH
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: \${{ secrets.SERVER_HOST }}
-  #         username: \${{ secrets.SERVER_USER }}
-  #         key: \${{ secrets.SERVER_SSH_KEY }}
-  #         port: \${{ secrets.SERVER_PORT || '22' }}
-  #         script: |
-  #           cd /opt/trading-platform
-  #           git pull origin main
-  #           npm ci --only=production
-  #           npm run build
-  #           pm2 restart trading-platform --update-env
