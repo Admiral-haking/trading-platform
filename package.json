@@ -6,7 +6,9 @@
     "dev": "ts-node-dev --respawn --transpile-only --watch src --ignore-watch build --ignore-watch next src/app.ts",
     "build": "rimraf build && tsc && NODE_ENV=production next build ./next && cp package.json build && cp -r next/public build",
     "start": "NODE_ENV=production node app.js",
-    "zip": "rimraf deploy.zip && cd build && zip -r ../deploy.zip * .next"
+    "zip": "rimraf deploy.zip && cd build && zip -r ../deploy.zip * .next",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -38,5 +40,6 @@
     "rimraf": "^5.0.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
-  }
+  },
+  "type": "module"
 }
